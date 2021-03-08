@@ -17,7 +17,7 @@ library(simmer.plot);
 library(fitdistrplus);
 
 # Set the working directory
-setwd("R/");
+#setwd("R/");
 
 # Load functions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
@@ -31,9 +31,23 @@ load("trial_dataset.RData");
 
 # Define parameters
 
+func.sex <- function() {
+  prob_male <- 0.33; ##33% of patients are male
+  sex <- ifelse(prob_male >= runif(1), 1, 0); #1 is male, 0 is female
+  return(sex)
+}
 
+func.tx1.response <- function() {
+  prob_tx1_response <- 1;
+  response <- ifelse(prob_tx1_response >= runif(1), 1, 0); #1 is response, 0 is non-response
+  return(response)
+}
 
-
+func.tx2.response <- function() {
+  prob_tx2_response <- 1;
+  response <- ifelse(prob_tx2_response >= runif(1), 1, 0); #1 is response, 0 is non-response
+  return(response)
+}
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
