@@ -17,7 +17,7 @@ library(simmer.plot);
 library(fitdistrplus);
 
 # Set the working directory
-#setwd("R/");
+setwd("R/");
 
 # Load functions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
@@ -63,26 +63,50 @@ func.tx2.response <- function() {
   response <- ifelse(prob_tx2_response >= runif(1), 1, 0); #1 is response, 0 is non-response
   return(response)
 }
+
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
-Tx1.event <- function() {
-  
-  #Randomly select whether the patient dies with a 10% probability or not
-  event <- ifelse(runif(1) < 0.10, 2, 1);
-  
-  return(event);                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
-  
-} # Function for defining the event during a cycle of Tx1
+Tx1.Event <- function() {
+  minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+  major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+  death <- ifelse(runif(1) < 0.03, 1, 0);
+  if (minor_comp == 1) {
+    return(3) #function returns and stops execution
+  }
+  else if (major_comp == 1) {
+    return(2)
+  }
+  else if (death == 1) {
+    return(1)
+  }
+  else {
+    return(0)
+  }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
+} 
+
+# Function for defining the event during a cycle of Tx1
 
 # Functions for determining the time-to-events
+
+# Function for defining the time spent on a cycle of Tx1 
 Tx1.time <- function(Tx1.Event) {
   
   return(30);
   
-} # Function for defining the time spent on a cycle of Tx1 
+}
 
+Tx2.time <- function() {
+  return(30);
+}
 
+followup1.time <- function() {
+  return(63);
+}
+
+palliative.time <- function() {
+  return(100);
+}
 
 
 ## Section 4: Discrete event simulation model ----
