@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ## Advanced Health Economic Modeling
 ## Assignment Part I: Health Economic Model
 ##
@@ -143,7 +142,6 @@ getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes
 View(getMultipleAttributes(c("Alive"), bsc.out));   # get outcomes for multiple outcomes at the same time
 
 
-=======
 ## Advanced Health Economic Modeling
 ## Assignment Part I: Health Economic Model
 ##
@@ -273,7 +271,5 @@ bsc.sim %>%
 # Get the outcomes for the monitored attributes
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive"), bsc.out));   # get outcomes for multiple outcomes at the same time
+View(getMultipleAttributes(c("Alive"), bsc.out))   # get outcomes for multiple outcomes at the same time
 
-
->>>>>>> ae77e7d214f6276ddda30db3049dd1e159c16375
