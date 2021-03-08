@@ -17,9 +17,9 @@ library(simmer.plot);
 library(fitdistrplus);
 
 # Set the working directory
-setwd("C:/path/to/your/AHEM files/");
+setwd("R/");
 
-# Load funtions for extracting monitored attributes
+# Load functions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
 source("getMultipleAttributes.R", echo=T);
 
