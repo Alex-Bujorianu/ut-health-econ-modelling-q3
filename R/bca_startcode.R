@@ -17,7 +17,7 @@ library(simmer.plot);
 library(fitdistrplus);
 
 # Set the working directory
-setwd("C:/path/to/your/AHEM files/");
+#setwd("C:/path/to/your/AHEM files/");
 
 # Load funtions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
@@ -30,9 +30,23 @@ source("getMultipleAttributes.R", echo=T);
 load("trial_dataset.RData");
 
 # Define parameters
+func.sex <- function() {
+  prob_male <- 0.33; #33% of patients are male
+  sex <- ifelse(prob_male >= runif(1), 1, 0);
+  return(sex)
+}
 
+func.condition <- function() {
+  prob_poor <- 0.21; #21% of patients are in poor clinical condtion
+  condition <- ifelse(prob_poor >= runif(1), 1, 0);
+  return(condition)
+}
 
-
+func.age <- function() {
+  mean_age <- 60; # mean age of patients is 60 years
+  age <- rnorm(mean=mean_age)
+  return(age)
+}
 
 ## Section 3: Supportive functions ----
 
