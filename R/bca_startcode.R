@@ -46,7 +46,7 @@ func.condition <- function() {
 
 func.age <- function() {
   mean_age <- 60; # mean age of patients is 60 years
-  age <- rnorm(mean=mean_age)
+  age <- rlnorm(n=1, meanlog=log(mean_age))
   return(age)
 }
 
