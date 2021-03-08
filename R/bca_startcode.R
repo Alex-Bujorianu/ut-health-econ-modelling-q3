@@ -45,7 +45,10 @@ func.condition <- function() {
 
 func.age <- function() {
   mean_age <- 60; # mean age of patients is 60 years
-  age <- rlnorm(n=1, meanlog=log(mean_age))
+  sd_age <- sd(data$Age); # SD of patients
+  location <- log(mean_age^2 / sqrt(sd_age^2 + mean_age^2))
+  shape <- sqrt(log(1 + (sd_age^2 / mean_age^2)))
+  age <- rlnorm(n=1, meanlog=location,sdlog=shape)
   return(age)
 }
 
