@@ -17,9 +17,9 @@ library(simmer.plot);
 library(fitdistrplus);
 
 # Set the working directory
-setwd("C:/path/to/your/AHEM files/");
+setwd("R/");
 
-# Load funtions for extracting monitored attributes
+# Load functions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
 source("getMultipleAttributes.R", echo=T);
 
@@ -67,31 +67,90 @@ func.tx2.response <- function() {
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
-Tx1.event <- function() {
-  
-  #Randomly select whether the patient has minor complications, major complications or dies or not
-  event <- {ifelse(runif(1) < 0.03, 2, 1);
-  return(event);                                              # A return value equal to 0 skips the branch and continues to the next activity.
-  
-} # Function for defining the event during a cycle of Tx1
+Tx1.Event <- function() {
+  minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+  major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+  death <- ifelse(runif(1) < 0.03, 1, 0);
+  if (minor_comp == 1) {
+    return(3) #function returns and stops execution
+  }
+  else if (major_comp == 1) {
+    return(2)
+  }
+  else if (death == 1) {
+    return(1)
+  }
+  else {
+    return(0)
+  }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
+} 
 
-Tx2.event <- function() {
-  
-  #Randomly select whether the patient dies with a 3% probability or not
-  event <- ifelse(runif(1) < 0.10, 2, 1);
-            
-  return(event);                                              # A return value equal to 0 skips the branch and continues to the next activity.
-  
-} # Function for defining the event during a cycle of Tx2
+Tx2.Event <- function() {
+  minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+  major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+  death <- ifelse(runif(1) < 0.03, 1, 0);
+  if (minor_comp == 1) {
+    return(3) #function returns and stops execution
+  }
+  else if (major_comp == 1) {
+    return(2)
+  }
+  else if (death == 1) {
+    return(1)
+  }
+  else {
+    return(0)
+  }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
+} 
+
+# Function for defining the event during a cycle of Tx1
 
 # Functions for determining the time-to-events
+
+# Function for defining the time spent on a cycle of Tx1 
 Tx1.time <- function(Tx1.Event) {
-  
-  return(30);
-  
-} # Function for defining the time spent on a cycle of Tx1 
+  #If patient has no issues or only minor complications, the full cycle duration occurs
+  if (Tx1.Event == 0 || Tx1.Event == 3) {
+    return(30);
+  }
+  else if (Tx1.Event == 1) {
+    return(15); #deaths tend to occur on day 15
+  }
+  else if (Tx1.Event == 2) {
+    return(6);
+  }
+}
 
+#Tx2 is identical to tx1
+Tx2.time <- function(Tx2.Event) {
+  #If patient has no issues or only minor complications, the full cycle duration occurs
+  if (Tx2.Event == 0 || Tx2.Event == 3) {
+    return(30);
+  }
+  else if (Tx2.Event == 1) {
+    return(15); #deaths tend to occur on day 15
+  }
+  else if (Tx2.Event == 2) {
+    return(6);
+  }
+}
+followup1.event <- function() {
+  #Patient lives or dies, 0 or 1 respectively
+  prob_death <- ifelse(runif(1) < 0.05, 1, 0);
+}
 
+followup1.time <- function(followup1.event) {
+  if (followup1.event == 0) {
+    return(63); #If patient survives this period lasts 63 days
+  }
+  else {
+    return(42); #deaths tend to occur on day 42
+  }
+}
+
+palliative.time <- function() {
+  return(100);
+}
 
 
 ## Section 4: Discrete event simulation model ----
@@ -103,7 +162,7 @@ bsc.model <- trajectory() %>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   
   # First-line treatment
-  set_attribute(key="Tx1.Event", value=function() Tx1.event()) %>%                                                 # select the event to happen in this treatment cycle          
+  set_attribute(key="Tx1.Event", value=function() Tx1.Event()) %>%                                                 # select the event to happen in this treatment cycle          
   branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F),
          
          # Event 1: Full cycle
@@ -121,13 +180,13 @@ bsc.model <- trajectory() %>%
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            set_attribute(key="Alive", value=0)                                                                     # update that the patient has died
-           
+         
          
   ) # branch first-line treatment
 
 # Visualize to check whether the defined model structure is ok
 plot(bsc.model);
-  
+
 
 
 
@@ -142,11 +201,11 @@ mon.patients <- 2;    # level of monitoring (see add_generator)
 # Define simulation for the best standard care (bsc)
 bsc.sim <- simmer() %>%
   add_resource(name="Tx1", capacity=Inf, mon=F) %>%
-  add_generator(name_prefix="Patient", trajectory=bsc.model, distribution=at(rep(x=0, times=n.patients)), mon=mon.patients)
   add_resource(name="Tx2", capacity=Inf, mon=F) %>%
   add_resource(name="Fu1", capacity=Inf, mon=F) %>%
   add_resource(name="Fu2", capacity=Inf, mon=F) %>%
-  
+  add_generator(name_prefix="Patient", trajectory=bsc.model, distribution=at(rep(x=0, times=n.patients)), mon=mon.patients)
+
 # Run the BSC simulation
 bsc.sim %>% 
   run()
@@ -154,6 +213,4 @@ bsc.sim %>%
 # Get the outcomes for the monitored attributes
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive"), bsc.out));   # get outcomes for multiple outcomes at the same time
-
-
+View(getMultipleAttributes(c("Alive"), bsc.out))   # get outcomes for multiple outcomes at the same time
