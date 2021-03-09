@@ -228,7 +228,7 @@ bsc.sim %>%
 # Get the outcomes for the monitored attributes
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive"), bsc.out))   # get outcomes for multiple outcomes at the same time
+View(getMultipleAttributes(c("Alive", "Tx1.Event"), bsc.out))   # get outcomes for multiple outcomes at the same time
 
 
 
