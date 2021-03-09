@@ -72,16 +72,16 @@ Tx1.Event <- function() {
   major_comp <- ifelse(runif(1) < 0.04, 1, 0);
   death <- ifelse(runif(1) < 0.03, 1, 0);
   if (minor_comp == 1) {
-    return(3) #function returns and stops execution
+    return(4) #function returns and stops execution
   }
   else if (major_comp == 1) {
-    return(2)
+    return(3)
   }
   else if (death == 1) {
-    return(1)
+    return(2)
   }
   else {
-    return(0)
+    return(1)
   }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
 } 
 
@@ -90,16 +90,16 @@ Tx2.Event <- function() {
   major_comp <- ifelse(runif(1) < 0.04, 1, 0);
   death <- ifelse(runif(1) < 0.03, 1, 0);
   if (minor_comp == 1) {
-    return(3) #function returns and stops execution
+    return(4) #function returns and stops execution
   }
   else if (major_comp == 1) {
-    return(2)
+    return(3)
   }
   else if (death == 1) {
-    return(1)
+    return(2)
   }
   else {
-    return(0)
+    return(1)
   }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
 } 
 
@@ -110,13 +110,13 @@ Tx2.Event <- function() {
 # Function for defining the time spent on a cycle of Tx1 
 Tx1.time <- function(Tx1.Event) {
   #If patient has no issues or only minor complications, the full cycle duration occurs
-  if (Tx1.Event == 0 || Tx1.Event == 3) {
+  if (Tx1.Event == 1 || Tx1.Event == 4) {
   return(30);
   }
-  else if (Tx1.Event == 1) {
+  else if (Tx1.Event == 2) {
     return(15); #deaths tend to occur on day 15
   }
-  else if (Tx1.Event == 2) {
+  else if (Tx1.Event == 3) {
     return(6);
   }
 }
@@ -124,13 +124,13 @@ Tx1.time <- function(Tx1.Event) {
 #Tx2 is identical to tx1
 Tx2.time <- function(Tx2.Event) {
   #If patient has no issues or only minor complications, the full cycle duration occurs
-  if (Tx2.Event == 0 || Tx2.Event == 3) {
+  if (Tx2.Event == 1 || Tx2.Event == 4) {
     return(30);
   }
-  else if (Tx2.Event == 1) {
+  else if (Tx2.Event == 2) {
     return(15); #deaths tend to occur on day 15
   }
-  else if (Tx2.Event == 2) {
+  else if (Tx2.Event == 3) {
     return(6);
   }
 }
@@ -162,8 +162,8 @@ bsc.model <- trajectory() %>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   
   # First-line treatment
-  set_attribute(key="Tx1.Event", value=function() Tx1.event()) %>%                                                 # select the event to happen in this treatment cycle          
-  branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F),
+  set_attribute(key="Tx1.Event", value=function() Tx1.Event()) %>%                                                 # select the event to happen in this treatment cycle          
+  branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F, F, T),
          
          # Event 1: Full cycle
          trajectory() %>%
@@ -179,8 +179,23 @@ bsc.model <- trajectory() %>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-           set_attribute(key="Alive", value=0)                                                                     # update that the patient has died
+           set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
            
+         # Event 3: Major Complications
+         trajectory() %>%
+           set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(bsc.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
+           rollback(amount=6, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+         
+         # Event 4: Minor Complications
+         trajectory() %>%
+           set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(bsc.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
+           rollback(amount=6, times=Inf)                                                                          # go back for another cycle (Hint: look at plot trajectory)
          
   ) # branch first-line treatment
 
@@ -201,6 +216,9 @@ mon.patients <- 2;    # level of monitoring (see add_generator)
 # Define simulation for the best standard care (bsc)
 bsc.sim <- simmer() %>%
   add_resource(name="Tx1", capacity=Inf, mon=F) %>%
+  add_resource(name="Tx2", capacity=Inf, mon=F) %>%
+  add_resource(name="Fu1", capacity=Inf, mon=F) %>%
+  add_resource(name="Fu2", capacity=Inf, mon=F) %>%
   add_generator(name_prefix="Patient", trajectory=bsc.model, distribution=at(rep(x=0, times=n.patients)), mon=mon.patients)
 
 # Run the BSC simulation
