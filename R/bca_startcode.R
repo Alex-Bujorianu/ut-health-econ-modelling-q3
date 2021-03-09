@@ -31,20 +31,58 @@ load("trial_dataset.RData");
 
 # Define parameters
 
+func.sex <- function() {
+  prob_male <- 0.33; #33% of patients are male
+  sex <- ifelse(prob_male >= runif(1), 1, 0);
+  return(sex)
+}
 
+func.condition <- function() {
+  prob_poor <- 0.21; #21% of patients are in poor clinical condtion
+  condition <- ifelse(prob_poor >= runif(1), 1, 0);
+  return(condition)
+}
 
+func.age <- function() {
+  mean_age <- 60; # mean age of patients is 60 years
+  sd_age <- sd(data$Age); # SD of patients
+  location <- log(mean_age^2 / sqrt(sd_age^2 + mean_age^2))
+  shape <- sqrt(log(1 + (sd_age^2 / mean_age^2)))
+  age <- rlnorm(n=1, meanlog=location,sdlog=shape)
+  return(age)
+}
+
+func.tx1.response <- function() {
+  prob_tx1_response <- 1;
+  response <- ifelse(prob_tx1_response >= runif(1), 1, 0); #1 is response, 0 is non-response
+  return(response)
+}
+
+func.tx2.response <- function() {
+  prob_tx2_response <- 1;
+  response <- ifelse(prob_tx2_response >= runif(1), 1, 0); #1 is response, 0 is non-response
+  return(response)
+}
 
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
 Tx1.event <- function() {
   
-  #Randomly select whether the patient dies with a 10% probability or not
-  event <- ifelse(runif(1) < 0.10, 2, 1);
-  
-  return(event);                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
+  #Randomly select whether the patient has minor complications, major complications or dies or not
+  event <- {ifelse(runif(1) < 0.03, 2, 1);
+  return(event);                                              # A return value equal to 0 skips the branch and continues to the next activity.
   
 } # Function for defining the event during a cycle of Tx1
+
+Tx2.event <- function() {
+  
+  #Randomly select whether the patient dies with a 3% probability or not
+  event <- ifelse(runif(1) < 0.10, 2, 1);
+            
+  return(event);                                              # A return value equal to 0 skips the branch and continues to the next activity.
+  
+} # Function for defining the event during a cycle of Tx2
 
 # Functions for determining the time-to-events
 Tx1.time <- function(Tx1.Event) {
@@ -105,7 +143,10 @@ mon.patients <- 2;    # level of monitoring (see add_generator)
 bsc.sim <- simmer() %>%
   add_resource(name="Tx1", capacity=Inf, mon=F) %>%
   add_generator(name_prefix="Patient", trajectory=bsc.model, distribution=at(rep(x=0, times=n.patients)), mon=mon.patients)
-
+  add_resource(name="Tx2", capacity=Inf, mon=F) %>%
+  add_resource(name="Fu1", capacity=Inf, mon=F) %>%
+  add_resource(name="Fu2", capacity=Inf, mon=F) %>%
+  
 # Run the BSC simulation
 bsc.sim %>% 
   run()
