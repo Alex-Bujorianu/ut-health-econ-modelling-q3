@@ -180,7 +180,7 @@ bsc.model <- trajectory() %>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%
-           log_("Patient has died") %>% # leave first-line treatment
+           log_("Patient has died in treatment cycle 1") %>% # leave first-line treatment
            set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
            
          # Event 3: Major Complications
