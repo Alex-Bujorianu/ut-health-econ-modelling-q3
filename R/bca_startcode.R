@@ -135,8 +135,9 @@ Tx2.time <- function(Tx2.Event) {
   }
 }
 followup1.event <- function() {
-  #Patient lives or dies, 0 or 1 respectively
-  prob_death <- ifelse(runif(1) < 0.05, 1, 0);
+  #Patient lives or dies, 2 or 1 respectively
+  prob_death <- ifelse(runif(1) < 0.05, 2, 1);
+  return(prob_death)
 }
 
 followup1.time <- function(followup1.event) {
@@ -198,7 +199,26 @@ bsc.model <- trajectory() %>%
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            rollback(amount=6, times=Inf)
          # go back for another cycle (Hint: look at plot trajectory)
-  )       
+  )%>% 
+  
+  #First follow up period
+  set_attribute(key="followup1.event", value=function() followup1.event()) %>%
+  branch(option=function() get_attribute(bsc.sim, "followup1.event"), continue=c(T, F),
+  
+  trajectory() %>% #First option: they survive the follow up
+    set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
+    seize(resource="Fu1", amount=1) %>%                                                                     
+    timeout_from_attribute(key="Fu1.Time") %>%                                                              
+    release(resource="Fu1", amount=1) %>%                                                                   
+    rollback(amount=6, times=Inf),
+
+  trajectory() %>% #Second option: they die during the follow up
+    set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
+    seize(resource="Fu1", amount=1) %>%                                                                     
+    timeout_from_attribute(key="Fu1.Time") %>%                                                              
+    release(resource="Fu1", amount=1) %>%                                                                   
+    rollback(amount=6, times=Inf)
+  ) %>%
          #Second line treatment
            set_attribute(key="Tx2.Event", value=function() Tx2.Event()) %>%                                                 # select the event to happen in this treatment cycle          
            branch(option=function() get_attribute(bsc.sim, "Tx2.Event"), continue=c(T, F, F, T),
@@ -234,7 +254,13 @@ bsc.model <- trajectory() %>%
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
                     rollback(amount=6, times=Inf)
          
-  )
+  ) %>%
+ trajectory() %>%
+  set_attribute(key="palliative.time", value=function() palliative.time()) %>%
+  seize(resource="Fu2", amount=1) %>%
+  timeout_from_attribute(key="palliative.time") %>%   
+  release(resource="Fu2", amount=1)
+  
 
 # Visualize to check whether the defined model structure is ok
 plot(bsc.model)
