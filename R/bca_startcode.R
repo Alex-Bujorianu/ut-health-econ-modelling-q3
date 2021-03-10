@@ -17,7 +17,7 @@ library(simmer.plot);
 library(fitdistrplus);
 
 # Set the working directory
-setwd("R/");
+#setwd("R/");
 
 # Load functions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
@@ -178,7 +178,8 @@ bsc.model <- trajectory() %>%
            set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(bsc.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
-           release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
+           release(resource="Tx1", amount=1) %>%
+           log_("Patient has died") %>% # leave first-line treatment
            set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
            
          # Event 3: Major Complications
@@ -195,17 +196,49 @@ bsc.model <- trajectory() %>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-           rollback(amount=6, times=Inf)                                                                          # go back for another cycle (Hint: look at plot trajectory)
+           rollback(amount=6, times=Inf),
+         # go back for another cycle (Hint: look at plot trajectory)
          
-  ) # branch first-line treatment
+         #Second line treatment
+           set_attribute(key="Tx2.Event", value=function() Tx2.Event()) %>%                                                 # select the event to happen in this treatment cycle          
+           branch(option=function() get_attribute(bsc.sim, "Tx2.Event"), continue=c(T, F, F, T),
+                  # Event 1: Full cycle
+                  trajectory() %>%
+                    set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(bsc.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
+                    seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
+                    timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+                    release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
+                    rollback(amount=6, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+                  
+                  # Event 2: Death
+                  trajectory() %>%
+                    set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(bsc.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
+                    seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
+                    timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+                    release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
+                    set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
+                  
+                  # Event 3: Major Complications
+                  trajectory() %>%
+                    set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(bsc.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
+                    seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
+                    timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
+                    release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
+                    rollback(amount=6, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+                  
+                  # Event 4: Minor Complications
+                  trajectory() %>%
+                    set_attribute(key="Tx2.Time", value=function() Tx1.time(get_attribute(bsc.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
+                    seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
+                    timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+                    release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
+                    rollback(amount=6, times=Inf)
+         
+  ))
 
 # Visualize to check whether the defined model structure is ok
-plot(bsc.model);
+plot(bsc.model)
   
-
-
-
-
 ## Section 5: Simulation ----
 
 # Simulation settings
