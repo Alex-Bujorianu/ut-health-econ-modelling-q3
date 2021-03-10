@@ -255,12 +255,13 @@ bsc.model <- trajectory() %>%
                     rollback(amount=6, times=Inf)
          
   ) %>%
- trajectory() %>%
   set_attribute(key="palliative.time", value=function() palliative.time()) %>%
-  seize(resource="Fu2", amount=1) %>%
-  timeout_from_attribute(key="palliative.time") %>%   
-  release(resource="Fu2", amount=1)
-  
+  branch(option=function() 1, continue=c(F),
+  trajectory() %>%
+    seize(resource="Fu2", amount=1) %>%
+    timeout_from_attribute(key="palliative.time") %>%   
+    release(resource="Fu2", amount=1)
+  )
 
 # Visualize to check whether the defined model structure is ok
 plot(bsc.model)
