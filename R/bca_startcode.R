@@ -67,12 +67,15 @@ func.tx2.response <- function() {
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
-Tx1.Event <- function() {
-  minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+Tx1.Event <- function(cycles) { #careful! This function now takes cycles as a parameter
+  minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
   major_comp <- ifelse(runif(1) < 0.04, 1, 0);
   death <- ifelse(runif(1) < 0.03, 1, 0);
-  if (minor_comp == 1) {
-    return(4) #function returns and stops execution
+  if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
+    return(5)
+  } 
+  else if (minor_comp == 1) {
+    return(4) 
   }
   else if (major_comp == 1) {
     return(3)
@@ -85,11 +88,14 @@ Tx1.Event <- function() {
   }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
 } 
 
-Tx2.Event <- function() {
+Tx2.Event <- function(cycles) {
   minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
   major_comp <- ifelse(runif(1) < 0.04, 1, 0);
   death <- ifelse(runif(1) < 0.03, 1, 0);
-  if (minor_comp == 1) {
+  if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
+    return(5)
+  } 
+  else if (minor_comp == 1) {
     return(4) #function returns and stops execution
   }
   else if (major_comp == 1) {
@@ -135,13 +141,13 @@ Tx2.time <- function(Tx2.Event) {
   }
 }
 followup1.event <- function() {
-  #Patient lives or dies, 2 or 1 respectively
+  #1: patient lives; 2: patient dies
   prob_death <- ifelse(runif(1) < 0.05, 2, 1);
   return(prob_death)
 }
 
 followup1.time <- function(followup1.event) {
-  if (followup1.event == 0) {
+  if (followup1.event == 1) {
     return(63); #If patient survives this period lasts 63 days
   }
   else {
@@ -159,12 +165,14 @@ palliative.time <- function() {
 # Define the model structure for the current practice, i.e. best standard care (BSC)
 bsc.model <- trajectory() %>%
   
-  # Initialization
+  # Initialization: do not forget to initialise these cycle attributes or the patients will all die.
+  set_attribute(key="Tx1.Cycles", value = 0)%>%
+  set_attribute(key="Tx2.Cycles", value = 0)%>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   
   # First-line treatment
-  set_attribute(key="Tx1.Event", value=function() Tx1.Event()) %>%                                                 # select the event to happen in this treatment cycle          
-  branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F, F, T),
+  set_attribute(key="Tx1.Event", value=function() Tx1.Event(cycles = get_attribute(bsc.sim, "Tx1.Cycles"))) %>%                                                 # select the event to happen in this treatment cycle          
+  branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F, F, T, F), #don't forget 5th is false
          
          # Event 1: Full cycle
          trajectory() %>%
@@ -172,7 +180,8 @@ bsc.model <- trajectory() %>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-           rollback(amount=6, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           rollback(amount=7, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
          
          # Event 2: Death
          trajectory() %>%
@@ -181,6 +190,7 @@ bsc.model <- trajectory() %>%
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%
            log_("Patient has died in treatment cycle 1") %>% # leave first-line treatment
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
            set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
            
          # Event 3: Major Complications
@@ -189,7 +199,8 @@ bsc.model <- trajectory() %>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-           rollback(amount=6, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           rollback(amount=7, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
          
          # Event 4: Minor Complications
          trajectory() %>%
@@ -197,8 +208,11 @@ bsc.model <- trajectory() %>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-           rollback(amount=6, times=Inf)
-         # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           rollback(amount=7, times=Inf), #no comma at the end
+         #Fifth trajectory: the patient has survived all treatment cycles and is out of first line treatment
+         trajectory()%>%
+           timeout(10)
   )%>% 
   
   #First follow up period
@@ -206,36 +220,42 @@ bsc.model <- trajectory() %>%
   branch(option=function() get_attribute(bsc.sim, "followup1.event"), continue=c(T, F),
   
   trajectory() %>% #First option: they survive the follow up
-    set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
-    seize(resource="Fu1", amount=1) %>%                                                                     
-    timeout_from_attribute(key="Fu1.Time") %>%                                                              
-    release(resource="Fu1", amount=1) %>%                                                                   
-    rollback(amount=6, times=Inf),
+    # set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
+    # seize(resource="Fu1", amount=1) %>%                                                                     
+    # timeout_from_attribute(key="Fu1.Time") %>%                                                              
+    # release(resource="Fu1", amount=1) %>%                                                                   
+    # rollback(amount=6, times=Inf),
+    timeout(10),
 
   trajectory() %>% #Second option: they die during the follow up
-    set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
-    seize(resource="Fu1", amount=1) %>%                                                                     
-    timeout_from_attribute(key="Fu1.Time") %>%                                                              
-    release(resource="Fu1", amount=1) %>%                                                                   
-    rollback(amount=6, times=Inf)
+    # set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
+    # seize(resource="Fu1", amount=1) %>%                                                                     
+    # timeout_from_attribute(key="Fu1.Time") %>%                                                              
+    # release(resource="Fu1", amount=1) %>%
+    log_("Patient has died during follow up") %>%
+    timeout(10)%>%
+    set_attribute(key="Alive", value=0)
   ) %>%
          #Second line treatment
-           set_attribute(key="Tx2.Event", value=function() Tx2.Event()) %>%                                                 # select the event to happen in this treatment cycle          
-           branch(option=function() get_attribute(bsc.sim, "Tx2.Event"), continue=c(T, F, F, T),
+           set_attribute(key="Tx2.Event", value=function() Tx2.Event(cycles = get_attribute(bsc.sim, "Tx2.Cycles"))) %>%                                                 # select the event to happen in this treatment cycle          
+           branch(option=function() get_attribute(bsc.sim, "Tx2.Event"), continue=c(T, F, F, T, F), #the 5th has to be false
                   # Event 1: Full cycle
                   trajectory() %>%
                     set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(bsc.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
                     seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                     timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-                    rollback(amount=6, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
+                    set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+                    rollback(amount=7, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
                  
                   # Event 2: Death
                   trajectory() %>%
                     set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(bsc.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
                     seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                     timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
-                    release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
+                    release(resource="Tx2", amount=1) %>%
+                    log_("Patient has died during second line treatment") %>%
+                    set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
                     set_attribute(key="Alive", value=0),                                                                   # update that the patient has died
                   
                   # Event 3: Major Complications
@@ -244,7 +264,8 @@ bsc.model <- trajectory() %>%
                     seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
                     timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                     release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-                    rollback(amount=6, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+                    set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+                    rollback(amount=7, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
                   
                   # Event 4: Minor Complications
                   trajectory() %>%
@@ -252,7 +273,11 @@ bsc.model <- trajectory() %>%
                     seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                     timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-                    rollback(amount=6, times=Inf)
+                    set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+                    rollback(amount=7, times=Inf),
+                  #Fifth trajectory: the patient has survived all treatment cycles
+                  trajectory()%>%
+                    timeout(10)
          
   ) %>%
   set_attribute(key="palliative.time", value=function() palliative.time()) %>%
