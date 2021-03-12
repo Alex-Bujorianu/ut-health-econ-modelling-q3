@@ -64,7 +64,7 @@ func.tx2.response <- function() {
   return(response)
 }
 
-func.tx1cost<- function(Tx1.Cycles, Tx1.time, Tx1.Event) {
+func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Event) {
   Tx1_cyclecost <- 504;
   Tx1_daycost <- 8;
   Minor_cost <- 381;
@@ -81,7 +81,7 @@ func.tx1cost<- function(Tx1.Cycles, Tx1.time, Tx1.Event) {
   return(cycle1cost)
 }
 
-func.tx2cost<- function(Tx2.Cycles, Tx2.time, Tx2.Event) {
+func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
   Tx2_cyclecost <- 4450;
   Tx2_daycost <- 14;
   Minor_cost <- 381;
@@ -98,7 +98,7 @@ func.tx2cost<- function(Tx2.Cycles, Tx2.time, Tx2.Event) {
   return(cycle2cost)
 }
 func.cost<- function(func.tx1cost, func.tx2cost) {
-  total_cost <- func.tx1cost+ func.tx2cost;
+  total_cost <- func.tx1cost + func.tx2cost;
   return(total_cost)
 }
 ## Section 3: Supportive functions ----
