@@ -64,6 +64,43 @@ func.tx2.response <- function() {
   return(response)
 }
 
+func.tx1cost<- function(Tx1.Cycles, Tx1.time, Tx1.Event) {
+  Tx1_cyclecost <- 504;
+  Tx1_daycost <- 8;
+  Minor_cost <- 381;
+  Major_cost <- 11032;
+  if (Tx1.Event == 4){
+    cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + Tx1.Event*Minor_cost;
+  }
+  else if (Tx1.Event == 3){
+    cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + Tx1.Event*Major_cost;
+  }
+  else{
+    cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time;
+  }
+  return(cycle1cost)
+}
+
+func.tx2cost<- function(Tx2.Cycles, Tx2.time, Tx2.Event) {
+  Tx2_cyclecost <- 4450;
+  Tx2_daycost <- 14;
+  Minor_cost <- 381;
+  Major_cost <- 11032;
+  if (Tx2.Event == 4){
+    cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + Tx2.Event*Minor_cost;
+  }
+  else if (Tx2.Event == 3){
+    cycle1cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + Tx2.Event*Major_cost;
+  }
+  else{
+    cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time;
+  }
+  return(cycle2cost)
+}
+func.cost<- function(func.tx1cost, func.tx2cost) {
+  total_cost <- func.tx1cost+ func.tx2cost;
+  return(total_cost)
+}
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
