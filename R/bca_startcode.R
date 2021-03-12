@@ -65,15 +65,15 @@ func.tx2.response <- function() {
 }
 
 #Function to find cycle 1 cost
-func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Event) {
+func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Complications) {
   Tx1_cyclecost <- 504;
   Tx1_daycost <- 8;
   Minor_cost <- 381;
   Major_cost <- 11032;
-  if (Tx1.Event == 4){
+  if (Tx1.Complications == 1){
     cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + 1*Minor_cost;
   }
-  else if (Tx1.Event == 3){
+  else if (Tx1.Complications == 2){
     cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + 1*Major_cost;
   }
   else{
@@ -83,15 +83,15 @@ func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Event) {
 }
 
 #Function to find cycle 2 cost
-func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
+func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Complications) {
   Tx2_cyclecost <- 4450;
   Tx2_daycost <- 14;
   Minor_cost <- 381;
   Major_cost <- 11032;
-  if (Tx2.Event == 4){
+  if (Tx2.Complications == 1){
     cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Minor_cost;
   }
-  else if (Tx2.Event == 3){
+  else if (Tx2.Complications == 2){
     cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Major_cost;
   }
   else{
@@ -101,8 +101,8 @@ func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
 }
 
 #Function to find total cost
-func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Event, Tx2.Cycles, Tx2.time, Tx2.Event) {
-  total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Event)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Event);
+func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
+  total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
   return(total_cost)
 }
 ## Section 3: Supportive functions ----
@@ -209,6 +209,8 @@ bsc.model <- trajectory() %>%
   # Initialization: do not forget to initialise these cycle attributes or the patients will all die.
   set_attribute(key="Tx1.Cycles", value = 0)%>%
   set_attribute(key="Tx2.Cycles", value = 0)%>%
+  set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
+  set_attribute(key="Tx2.Complications", value=0) %>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   
   # First-line treatment
@@ -241,7 +243,8 @@ bsc.model <- trajectory() %>%
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
-           rollback(amount=7, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
+           rollback(amount=8, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
          
          # Event 4: Minor Complications
          trajectory() %>%
@@ -250,7 +253,8 @@ bsc.model <- trajectory() %>%
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
-           rollback(amount=7, times=Inf), #no comma at the end
+           set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
+           rollback(amount=8, times=Inf), #no comma at the end
          #Fifth trajectory: the patient has survived all treatment cycles and is out of first line treatment
          trajectory()%>%
            timeout(10)
@@ -306,7 +310,8 @@ bsc.model <- trajectory() %>%
                     timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                     release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
-                    rollback(amount=7, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+                    set_attribute(keys="Tx2.Complications", value=2) %>%
+                    rollback(amount=8, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
                   
                   # Event 4: Minor Complications
                   trajectory() %>%
@@ -315,7 +320,8 @@ bsc.model <- trajectory() %>%
                     timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
-                    rollback(amount=7, times=Inf),
+                    set_attribute(keys="Tx2.Complications", value = 1) %>%
+                    rollback(amount=8, times=Inf),
                   #Fifth trajectory: the patient has survived all treatment cycles
                   trajectory()%>%
                     timeout(10)
