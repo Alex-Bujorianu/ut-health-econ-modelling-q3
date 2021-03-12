@@ -64,6 +64,7 @@ func.tx2.response <- function() {
   return(response)
 }
 
+#Function to find cycle 1 cost
 func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Event) {
   Tx1_cyclecost <- 504;
   Tx1_daycost <- 8;
@@ -81,6 +82,7 @@ func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Event) {
   return(cycle1cost)
 }
 
+#Function to find cycle 2 cost
 func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
   Tx2_cyclecost <- 4450;
   Tx2_daycost <- 14;
@@ -90,7 +92,7 @@ func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
     cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Minor_cost;
   }
   else if (Tx2.Event == 3){
-    cycle1cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Major_cost;
+    cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Major_cost;
   }
   else{
     cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time;
@@ -98,6 +100,7 @@ func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
   return(cycle2cost)
 }
 
+#Function to find total cost
 func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Event, Tx2.Cycles, Tx2.time, Tx2.Event) {
   total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Event)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Event);
   return(total_cost)
