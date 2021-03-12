@@ -70,10 +70,10 @@ func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Event) {
   Minor_cost <- 381;
   Major_cost <- 11032;
   if (Tx1.Event == 4){
-    cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + Tx1.Event*Minor_cost;
+    cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + 1*Minor_cost;
   }
   else if (Tx1.Event == 3){
-    cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + Tx1.Event*Major_cost;
+    cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + 1*Major_cost;
   }
   else{
     cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time;
@@ -87,10 +87,10 @@ func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
   Minor_cost <- 381;
   Major_cost <- 11032;
   if (Tx2.Event == 4){
-    cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + Tx2.Event*Minor_cost;
+    cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Minor_cost;
   }
   else if (Tx2.Event == 3){
-    cycle1cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + Tx2.Event*Major_cost;
+    cycle1cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Major_cost;
   }
   else{
     cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time;
