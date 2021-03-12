@@ -97,8 +97,9 @@ func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Event) {
   }
   return(cycle2cost)
 }
-func.cost<- function(func.tx1cost, func.tx2cost) {
-  total_cost <- func.tx1cost + func.tx2cost;
+
+func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Event, Tx2.Cycles, Tx2.time, Tx2.Event) {
+  total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Event)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Event);
   return(total_cost)
 }
 ## Section 3: Supportive functions ----
