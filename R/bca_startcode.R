@@ -134,6 +134,23 @@ func.utility <- function(position){
   return(utility)
 }
 
+func.qaly <- function(funct.utility,position,Tx1.time,Tx2.time, followup1.time,palliative.time){
+  qaly=0
+  if (position<4){
+    qaly=qaly+(utility * Tx1.time /365)
+  }
+  else if (position==4){
+    qaly=qaly+(utility*followup1.time/365)
+  }
+  else if (position>4 & position<8){
+    qaly=qaly+(utility*Tx2.time/365)
+  }
+  else {
+    qaly=qaly+(utility*palliative.time/365)
+  }
+  return(qaly)
+}
+
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
@@ -233,11 +250,11 @@ palliative.time <- function() {
 ## Section 4: Discrete event simulation model ----
 
 # Define the model structure for the current practice, i.e. best standard care (BSC)
-bsc.model <- trajectory() %>%
+bsc.model <- trajectory()%>%
   
   # Initialization: do not forget to initialise these cycle attributes or the patients will all die.
-  set_attribute(key="Tx1.Cycles", value = 0)%>%
-  set_attribute(key="Tx2.Cycles", value = 0)%>%
+  set_attribute(key="Tx1.Cycles", value = 0) %>%
+  set_attribute(key="Tx2.Cycles", value = 0) %>%
   set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
   set_attribute(key="Tx2.Complications", value=0) %>%
   set_attribute(key="position", value=0) %>%
