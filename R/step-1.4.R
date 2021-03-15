@@ -56,3 +56,17 @@ gofstat(list(dist_weibull_female, dist_gamma_female, dist_lognorm_female),
 # The Anderson Darling test gives extra weight to the tails and this is where Weibull performs notably better.
 # Small A-S statistic = better
 # We will go with Weibull.
+
+Tx1_average_response_rate <- sum(data$Tx1.C1.Dx.Pet==1) / length(data$Tx1.C1.Dx.Pet)
+
+#Average Tx1 response rate is 48%, about 50/50
+
+Tx1_poor_response <- vector()
+for (i in 1:length(data$Poor)) {
+  if (data$Poor[i] == 1) {
+    Tx1_poor_response <- c(Tx1_poor_response, data$Tx1.C1.Dx.Pet[i])
+  }
+}
+Tx1_poor_response_rate <- sum(Tx1_poor_response==1) / length(Tx1_poor_response)
+
+#44.8% vs 48%. Doesn’t make a huge amount of difference if the patient is in poor condition or not. 
