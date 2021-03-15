@@ -139,16 +139,16 @@ func.utility <- function(position){
 qaly=0
 func.qaly <- function(func.utility,position,Tx1.time,Tx2.time, followup1.time,palliative.time){
   if (position<4){
-    qaly=qaly+(func.utility * Tx1.time /365)
+    qaly=qaly+(func.utility(position) * Tx1.time /365)
   }
   else if (position==4){
-    qaly=qaly+(func.utility*followup1.time/365)
+    qaly=qaly+(func.utility(position)*followup1.time/365)
   }
   else if (position>4 & position<8){
-    qaly=qaly+(func.utility*Tx2.time/365)
+    qaly=qaly+(func.utility(position)*Tx2.time/365)
   }
   else {
-    qaly=qaly+(func.utility*palliative.time/365)
+    qaly=qaly+(func.utility(position)*palliative.time()/365)
   }
   return(qaly)
 }
