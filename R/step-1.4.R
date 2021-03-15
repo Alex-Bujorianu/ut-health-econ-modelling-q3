@@ -79,3 +79,31 @@ for (i in 1:length(data$Poor)) {
 Tx1_good_condition_response_rate <- sum(Tx1_good_condition_response==1) / length(Tx1_good_condition_response)
 
 #44.8% vs 50%. Doesn’t make a huge amount of difference if the patient is in poor condition or not. 
+
+#Let's see whether response in Tx2 is predicated on response in Tx1, or if they are independent.
+
+#There should be NAs in Tx2.C1 only if the patient died sometime in the previous cycles.
+
+#if you responded to treatment 1, how do you respond to treatment 2?
+#For this, I compare Tx1.C1.Dx.Pet (first cycle in first treatment) with first cycle in second treatment
+Tx2_responders <- vector()
+Tx2_nonresponders <- vector()
+for (i in 1:length(data$Tx1.C2.Dx.Pet)) {
+  if (data$Tx1.C1.Dx.Pet[i] == 1 && !is.na(data$Tx2.C1.Dx.Pet[i])) {
+    Tx2_responders <- c(Tx2_responders, data$Tx2.C1.Dx.Pet[i])
+  }
+  else if (!is.na(data$Tx2.C1.Dx.Pet[i])) { #we are ignoring NAs which signify death or major comps
+    Tx2_nonresponders <- c(Tx2_nonresponders, data$Tx2.C1.Dx.Pet[i])
+  }
+}
+Tx2_responders_rate <- sum(Tx2_responders==1) / length(Tx2_responders)
+Tx2_nonresponders_rate <- sum(Tx2_nonresponders==1) / length(Tx2_nonresponders)
+
+# The nonresponders had a response rate of 36% in treatment 2 cycle 1, and the responders had a rate of 59%
+# I don't think a statistical test of significance is necessary with a difference this big and an n close to 200
+
+prop.test(x=c(sum(Tx2_responders==1), sum(Tx2_nonresponders==1)), 
+          n=c(length(Tx2_responders), length(Tx2_nonresponders)), p = NULL, alternative = "greater",
+          correct = FALSE)
+#The Z test of proportion shows us that the p value is tiny
+
