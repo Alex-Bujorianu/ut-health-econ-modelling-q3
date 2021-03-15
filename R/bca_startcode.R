@@ -105,6 +105,35 @@ func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.ti
   total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
   return(total_cost)
 }
+
+func.utility <- function(position){
+  if  (position<5){ #in tx1
+    utility =0.55
+    if (position==2){ #major complication
+      utility	=utility -0.1
+    }
+    if (position==3){ #minor complication
+      utility	=utility -0.05
+    }
+    if (position==4){#in follow up
+      utility =1.1*utility
+    }
+  }
+  else {
+    utility=0.5
+      if (position==6){ #major complication
+        utility	=utility -0.1
+      }
+      if (position==7){ #minor complication
+        utility	=utility -0.05
+      }
+      if (position==8){#in follow up
+        utility =1.1*utility
+      }
+  }
+  return(utility)
+}
+
 ## Section 3: Supportive functions ----
 
 # Function for determining the event to happen
@@ -211,6 +240,7 @@ bsc.model <- trajectory() %>%
   set_attribute(key="Tx2.Cycles", value = 0)%>%
   set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
   set_attribute(key="Tx2.Complications", value=0) %>%
+  set_attribute(key="position", value=0) %>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   
   # First-line treatment
@@ -224,7 +254,8 @@ bsc.model <- trajectory() %>%
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
-           rollback(amount=7, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(key="position", value=1) %>%
+           rollback(amount=8, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
          
          # Event 2: Death
          trajectory() %>%
@@ -244,7 +275,8 @@ bsc.model <- trajectory() %>%
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
            set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
-           rollback(amount=8, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(key="position", value=2) %>%
+           rollback(amount=9, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
          
          # Event 4: Minor Complications
          trajectory() %>%
@@ -254,7 +286,8 @@ bsc.model <- trajectory() %>%
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
            set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
-           rollback(amount=8, times=Inf), #no comma at the end
+           set_attribute(key="position", value=3) %>%
+           rollback(amount=9, times=Inf), #no comma at the end
          #Fifth trajectory: the patient has survived all treatment cycles and is out of first line treatment
          trajectory()%>%
            timeout(10)
@@ -270,6 +303,7 @@ bsc.model <- trajectory() %>%
     # timeout_from_attribute(key="Fu1.Time") %>%                                                              
     # release(resource="Fu1", amount=1) %>%                                                                   
     # rollback(amount=6, times=Inf),
+    set_attribute(key="position", value=4) %>%
     timeout(10),
 
   trajectory() %>% #Second option: they die during the follow up
@@ -291,7 +325,8 @@ bsc.model <- trajectory() %>%
                     timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
-                    rollback(amount=7, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
+                    set_attribute(key="position", value=5) %>%
+                    rollback(amount=8, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
                  
                   # Event 2: Death
                   trajectory() %>%
@@ -311,7 +346,8 @@ bsc.model <- trajectory() %>%
                     release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
                     set_attribute(keys="Tx2.Complications", value=2) %>%
-                    rollback(amount=8, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+                    set_attribute(key="position", value=6) %>%
+                    rollback(amount=9, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
                   
                   # Event 4: Minor Complications
                   trajectory() %>%
@@ -321,7 +357,8 @@ bsc.model <- trajectory() %>%
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
                     set_attribute(keys="Tx2.Complications", value = 1) %>%
-                    rollback(amount=8, times=Inf),
+                    set_attribute(key="position", value=7) %>%
+                    rollback(amount=9, times=Inf),
                   #Fifth trajectory: the patient has survived all treatment cycles
                   trajectory()%>%
                     timeout(10)
@@ -332,6 +369,7 @@ bsc.model <- trajectory() %>%
   trajectory() %>%
     seize(resource="Fu2", amount=1) %>%
     timeout_from_attribute(key="palliative.time") %>%   
+    set_attribute(key="position", value=8) %>%
     release(resource="Fu2", amount=1)
   )
 
