@@ -106,6 +106,7 @@ func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.ti
   return(total_cost)
 }
 
+#Utility of a patient depending on wehere they are in a cycle
 func.utility <- function(position){
   if  (position<5){ #in tx1
     utility =0.55
@@ -134,26 +135,27 @@ func.utility <- function(position){
   return(utility)
 }
 
-func.qaly <- function(funct.utility,position,Tx1.time,Tx2.time, followup1.time,palliative.time){
-  qaly=0
+#Calculate qaly for a patient
+qaly=0
+func.qaly <- function(func.utility,position,Tx1.time,Tx2.time, followup1.time,palliative.time){
   if (position<4){
-    qaly=qaly+(utility * Tx1.time /365)
+    qaly=qaly+(func.utility * Tx1.time /365)
   }
   else if (position==4){
-    qaly=qaly+(utility*followup1.time/365)
+    qaly=qaly+(func.utility*followup1.time/365)
   }
   else if (position>4 & position<8){
-    qaly=qaly+(utility*Tx2.time/365)
+    qaly=qaly+(func.utility*Tx2.time/365)
   }
   else {
-    qaly=qaly+(utility*palliative.time/365)
+    qaly=qaly+(func.utility*palliative.time/365)
   }
   return(qaly)
 }
 
 ## Section 3: Supportive functions ----
 
-# Function for determining the event to happen
+# Function for determining the event to happen in Tx1
 Tx1.Event <- function(cycles) { #careful! This function now takes cycles as a parameter
   minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
   major_comp <- ifelse(runif(1) < 0.04, 1, 0);
@@ -175,6 +177,7 @@ Tx1.Event <- function(cycles) { #careful! This function now takes cycles as a pa
   }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
 } 
 
+# Function for determining the event to happen in Tx2
 Tx2.Event <- function(cycles) {
   minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
   major_comp <- ifelse(runif(1) < 0.04, 1, 0);
@@ -196,7 +199,12 @@ Tx2.Event <- function(cycles) {
   }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
 } 
 
-# Function for defining the event during a cycle of Tx1
+# Function for determining the event to happen in Follow up 1
+followup1.event <- function() {
+  #1: patient lives; 2: patient dies
+  prob_death <- ifelse(runif(1) < 0.05, 2, 1);
+  return(prob_death)
+}
 
 # Functions for determining the time-to-events
 
@@ -227,12 +235,8 @@ Tx2.time <- function(Tx2.Event) {
     return(6);
   }
 }
-followup1.event <- function() {
-  #1: patient lives; 2: patient dies
-  prob_death <- ifelse(runif(1) < 0.05, 2, 1);
-  return(prob_death)
-}
 
+# Function for defining the time spent in Follow up 1 
 followup1.time <- function(followup1.event) {
   if (followup1.event == 1) {
     return(63); #If patient survives this period lasts 63 days
@@ -242,6 +246,7 @@ followup1.time <- function(followup1.event) {
   }
 }
 
+# Function for defining the time spent in palliative care 
 palliative.time <- function() {
   return(100);
 }
