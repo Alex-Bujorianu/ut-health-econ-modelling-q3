@@ -69,4 +69,13 @@ for (i in 1:length(data$Poor)) {
 }
 Tx1_poor_response_rate <- sum(Tx1_poor_response==1) / length(Tx1_poor_response)
 
-#44.8% vs 48%. Doesn’t make a huge amount of difference if the patient is in poor condition or not. 
+Tx1_good_condition_response <- vector()
+for (i in 1:length(data$Poor)) {
+  if (data$Poor[i] == 0) {
+    Tx1_good_condition_response <- c(Tx1_good_condition_response, data$Tx1.C1.Dx.Pet[i])
+  }
+}
+
+Tx1_good_condition_response_rate <- sum(Tx1_good_condition_response==1) / length(Tx1_good_condition_response)
+
+#44.8% vs 50%. Doesn’t make a huge amount of difference if the patient is in poor condition or not. 
