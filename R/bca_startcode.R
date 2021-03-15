@@ -144,7 +144,7 @@ func.qaly <- function(func.utility,position,Tx1.time,Tx2.time, followup1.time,pa
   else if (position==4){
     qaly=qaly+(func.utility(position)*followup1.time/365)
   }
-  else if (position>4 & position<8){
+  else if (position>4 && position<8){
     qaly=qaly+(func.utility(position)*Tx2.time/365)
   }
   else {
