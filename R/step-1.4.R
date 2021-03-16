@@ -116,19 +116,19 @@ male <- data$Male #male is already 0 1 coded
 age <- data$Age #age is numerical and continuous
 
 # Let's look at the people who are still alive at C2 to figure out the total death rate during those 2 cycles.
-C2_events <- data$Tx1.C2.Event
+C2_transformed_events <- data$Tx1.C2.Event
 #We need to transform this data into alive or dead coded 0 or 1.
-for (i in 1:length(C2_events)) {
+for (i in 1:length(C2_transformed_events)) {
   #0 = no comps, 2 = major, 3 = minor, but they are alive
-  if (!is.na(C2_events[i]) && (C2_events[i] == 0 || C2_events[i] == 2 || C2_events[i] == 3)) {
-    C2_events[i] <- 1
+  if (!is.na(C2_transformed_events[i]) && (C2_transformed_events[i] == 0 || C2_transformed_events[i] == 2 || C2_transformed_events[i] == 3)) {
+    C2_transformed_events[i] <- 1
   }
   else {
-    C2_events[i] <- 0
+    C2_transformed_events[i] <- 0
   }
 }
 
-logreg_death <- glm(C2_events ~ male + age, family = binomial)
+logreg_death <- glm(C2_transformed_events ~ male + age, family = binomial)
 summary(logreg_death)
 
 #Age is not significant but gender is. Men are more likely to die from colon cancer.
@@ -143,10 +143,12 @@ for (i in 1:length(C1_events)) {
     C1_time_to_death <- c(C1_time_to_death, data$Tx1.C1.Time[i])
   }
 }
+C2_events <- data$Tx1.C2.Event
 C2_time_to_death <- vector()
 for (i in 1:length(C2_events)) {
-  if (C2_events[i] == 1) {
-    C2_time_to_death <- c(C2_time_to_death, data$Tx1.C2.Time[i])
+  if (!is.na(C2_events[i]) && C2_events[i] == 1) {
+    #If the patient dies in C2, the time to death is the amount spent in Tx1.C2 PLUS the time they spent in C1
+    C2_time_to_death <- c(C2_time_to_death, sum(data$Tx1.C2.Time[i], data$Tx1.C1.Time[i]))
   }
 }
 Tx1_times <- c(C1_time_to_death, C2_time_to_death)

@@ -267,6 +267,7 @@ bsc.model <- trajectory()%>%
   set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
   set_attribute(key="Tx2.Complications", value=0) %>%
   set_attribute(key="position", value=0) %>%
+  set_attribute(key="qalys", value=0) %>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   
   # First-line treatment
@@ -281,7 +282,9 @@ bsc.model <- trajectory()%>%
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
            set_attribute(key="position", value=1) %>%
-           rollback(amount=8, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
+           rollback(amount=9, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
          
          # Event 2: Death
          trajectory() %>%
@@ -291,6 +294,8 @@ bsc.model <- trajectory()%>%
            release(resource="Tx1", amount=1) %>%
            log_("Patient has died in treatment cycle 1") %>% # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                             get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
            set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
            
          # Event 3: Major Complications
@@ -302,7 +307,9 @@ bsc.model <- trajectory()%>%
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
            set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
            set_attribute(key="position", value=2) %>%
-           rollback(amount=9, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                             get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
+           rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
          
          # Event 4: Minor Complications
          trajectory() %>%
@@ -313,7 +320,9 @@ bsc.model <- trajectory()%>%
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
            set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
            set_attribute(key="position", value=3) %>%
-           rollback(amount=9, times=Inf), #no comma at the end
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                             get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
+           rollback(amount=10, times=Inf), 
          #Fifth trajectory: the patient has survived all treatment cycles and is out of first line treatment
          trajectory()%>%
            timeout(10)
@@ -330,6 +339,8 @@ bsc.model <- trajectory()%>%
     # release(resource="Fu1", amount=1) %>%                                                                   
     # rollback(amount=6, times=Inf),
     set_attribute(key="position", value=4) %>%
+    set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                      get_attribute(bsc.sim, "Tx1.Time"), 0, 10)) %>%
     timeout(10),
 
   trajectory() %>% #Second option: they die during the follow up
@@ -339,6 +350,8 @@ bsc.model <- trajectory()%>%
     # release(resource="Fu1", amount=1) %>%
     log_("Patient has died during follow up") %>%
     timeout(10)%>%
+    set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                      get_attribute(bsc.sim, "Tx1.Time"), 0, 10)) %>%
     set_attribute(key="Alive", value=0)
   ) %>%
          #Second line treatment
@@ -352,7 +365,10 @@ bsc.model <- trajectory()%>%
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
                     set_attribute(key="position", value=5) %>%
-                    rollback(amount=8, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
+                    set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                      get_attribute(bsc.sim, "Tx1.Time"), 
+                                                                                      get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
+                    rollback(amount=9, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
                  
                   # Event 2: Death
                   trajectory() %>%
@@ -362,6 +378,9 @@ bsc.model <- trajectory()%>%
                     release(resource="Tx2", amount=1) %>%
                     log_("Patient has died during second line treatment") %>%
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
+                    set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                      get_attribute(bsc.sim, "Tx1.Time"), 
+                                                                                      get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
                     set_attribute(key="Alive", value=0),                                                                   # update that the patient has died
                   
                   # Event 3: Major Complications
@@ -373,7 +392,10 @@ bsc.model <- trajectory()%>%
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
                     set_attribute(keys="Tx2.Complications", value=2) %>%
                     set_attribute(key="position", value=6) %>%
-                    rollback(amount=9, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+                    set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                      get_attribute(bsc.sim, "Tx1.Time"), 
+                                                                                      get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
+                    rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
                   
                   # Event 4: Minor Complications
                   trajectory() %>%
@@ -384,7 +406,10 @@ bsc.model <- trajectory()%>%
                     set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
                     set_attribute(keys="Tx2.Complications", value = 1) %>%
                     set_attribute(key="position", value=7) %>%
-                    rollback(amount=9, times=Inf),
+                    set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                      get_attribute(bsc.sim, "Tx1.Time"), 
+                                                                                      get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
+                    rollback(amount=10, times=Inf),
                   #Fifth trajectory: the patient has survived all treatment cycles
                   trajectory()%>%
                     timeout(10)
@@ -396,6 +421,9 @@ bsc.model <- trajectory()%>%
     seize(resource="Fu2", amount=1) %>%
     timeout_from_attribute(key="palliative.time") %>%   
     set_attribute(key="position", value=8) %>%
+    set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                      get_attribute(bsc.sim, "Tx1.Time"), 
+                                                                      get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
     release(resource="Fu2", amount=1)
   )
 
@@ -424,7 +452,7 @@ bsc.sim %>%
 # Get the outcomes for the monitored attributes
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive", "Tx1.Event"), bsc.out))   # get outcomes for multiple outcomes at the same time
+View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.complications", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
 
 
 
