@@ -137,8 +137,8 @@ func.utility <- function(position){
 
 #This function does NOT return a total. It only returns the qalys during a specific cycle.
 #Therefore, it must be called up during each cycle and the result added to the patient's cumulative total.
+qaly=0
 func.qaly <- function(position, Tx1.time, Tx2.time, followup1.time){
-  qaly=0
   if (position<4){
     qaly=qaly+(func.utility(position) * Tx1.time /365)
   }
@@ -255,8 +255,6 @@ palliative.time <- function() {
 
 
 ## Section 4: Discrete event simulation model ----
-
-# TO DO: record the qalys for each patient.
 
 # Define the model structure for the current practice, i.e. best standard care (BSC)
 bsc.model <- trajectory()%>%
@@ -453,6 +451,5 @@ bsc.sim %>%
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
 View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.complications", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
-
 
 
