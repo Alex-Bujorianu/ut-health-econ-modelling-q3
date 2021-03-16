@@ -137,7 +137,7 @@ func.utility <- function(position){
 
 #Calculate qaly for a patient
 qaly=0
-func.qaly <- function(func.utility,position,Tx1.time,Tx2.time, followup1.time,palliative.time){
+func.qaly <- function(position, Tx1.time, Tx2.time, followup1.time){
   if (position<4){
     qaly=qaly+(func.utility(position) * Tx1.time /365)
   }
