@@ -107,3 +107,28 @@ prop.test(x=c(sum(Tx2_responders==1), sum(Tx2_nonresponders==1)),
           correct = FALSE)
 #The Z test of proportion shows us that the p value is tiny
 
+# Logistic regression to predict death (0 or 1) based on the independent variables sex and age.
+# Using data from C1 and C2 of Tx1 only.
+
+# We will use the glm package, but first we have to define the variables
+
+male <- data$Male #male is already 0 1 coded
+age <- data$Age #age is numerical and continuous
+
+# Let's look at the people who are still alive at C2 to figure out the total death rate during those 2 cycles.
+C2_events <- data$Tx1.C2.Event
+#We need to transform this data into alive or dead coded 0 or 1.
+for (i in 1:length(C2_events)) {
+  #0 = no comps, 2 = major, 3 = minor, but they are alive
+  if (!is.na(C2_events[i]) && (C2_events[i] == 0 || C2_events[i] == 2 || C2_events[i] == 3)) {
+    C2_events[i] <- 1
+  }
+  else {
+    C2_events[i] <- 0
+  }
+}
+
+logreg_death <- glm(C2_events ~ male + age, family = binomial)
+summary(logreg_death)
+
+#Age is not significant but gender is. Men are more likely to die from colon cancer.
