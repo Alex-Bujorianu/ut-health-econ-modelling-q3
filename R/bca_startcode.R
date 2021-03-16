@@ -290,7 +290,7 @@ bsc.model <- trajectory()%>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%
-           log_("Patient has died in treatment cycle 1") %>% # leave first-line treatment
+           log_("Patient has died during first line treatment") %>% # leave first-line treatment
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
            set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                              get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
@@ -417,7 +417,8 @@ bsc.model <- trajectory()%>%
   branch(option=function() 1, continue=c(F),
   trajectory() %>%
     seize(resource="Fu2", amount=1) %>%
-    timeout_from_attribute(key="palliative.time") %>%   
+    timeout_from_attribute(key="palliative.time") %>%
+    log_("Patient has survived the all treatment cycles") %>%
     set_attribute(key="position", value=8) %>%
     set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                       get_attribute(bsc.sim, "Tx1.Time"), 
@@ -450,6 +451,6 @@ bsc.sim %>%
 # Get the outcomes for the monitored attributes
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx2.Event", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
+View(getMultipleAttributes(c("Alive", "Tx1.Event", "followup1.event", "Tx2.Event", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
 
 
