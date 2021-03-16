@@ -132,3 +132,59 @@ logreg_death <- glm(C2_events ~ male + age, family = binomial)
 summary(logreg_death)
 
 #Age is not significant but gender is. Men are more likely to die from colon cancer.
+
+#We want to find time-to-death and time-to-major-complication for Tx1 and Tx2 based on C1 + C2
+
+# Time to death
+C1_events <- data$Tx1.C1.Event
+C1_time_to_death <- vector()
+for (i in 1:length(C1_events)) {
+  if (C1_events[i] == 1) { #if death
+    C1_time_to_death <- c(C1_time_to_death, data$Tx1.C1.Time[i])
+  }
+}
+C2_time_to_death <- vector()
+for (i in 1:length(C2_events)) {
+  if (C2_events[i] == 1) {
+    C2_time_to_death <- c(C2_time_to_death, data$Tx1.C2.Time[i])
+  }
+}
+Tx1_times <- c(C1_time_to_death, C2_time_to_death)
+hist(Tx1_times)
+# I am not convinced there is going to be a good distribution that fits Tx1_times. 
+# The exponential is worth a try, it is often used for time-to-event fitting.
+
+Tx1_time_exponential <- fitdist(Tx1_times, distr="exp")
+plot(Tx1_time_exponential)
+gofstat(Tx1_time_exponential, fitnames="Exponential distribution for time to death")
+
+#Nope, it's miles off.
+
+Tx1_time_gamma <- fitdist(Tx1_times, distr="gamma")
+plot(Tx1_time_gamma)
+Tx1_time_weibull <- fitdist(Tx1_times, distr="weibull")
+plot(Tx1_time_weibull)
+gofstat(list(Tx1_time_exponential, Tx1_time_gamma, Tx1_time_weibull), fitnames=c(
+  "Exponential", "Gamma", "Weibull"
+))
+
+#Weibull is the best fit, but I would personally just use the mean.
+
+#If the patient has a major complication they will discontinue treatment. So we will only look at C1.
+Tx1_time_to_major <- vector()
+
+for (i in 1:length(C1_events)) {
+  if (C1_events[i] == 2) {
+    Tx1_time_to_major <- c(Tx1_time_to_major, data$Tx1.C1.Time[i])
+  }
+}
+
+Tx1_major_gamma <- fitdist(Tx1_time_to_major, distr="gamma")
+Tx1_major_weibull <- fitdist(Tx1_time_to_major, distr="weibull")
+plot(Tx1_major_gamma)
+plot(Tx1_major_weibull)
+gofstat(list(Tx1_major_gamma, Tx1_major_weibull), fitnames=c("gamma", "weibull"))
+
+#For time to major, the gamma distribution seems to be a slightly better fit.
+
+# I am going to assume that Tx2 is symmetrical with Tx1 and we can use the same values for both. 

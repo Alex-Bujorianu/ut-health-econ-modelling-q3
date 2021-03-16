@@ -220,7 +220,7 @@ Tx1.time <- function(Tx1.Event) {
     return(15); #deaths tend to occur on day 15
   }
   else if (Tx1.Event == 3) {
-    return(6);
+    return(6); #major comps tend to occur on day 6
   }
 }
 
