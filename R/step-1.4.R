@@ -166,11 +166,13 @@ Tx1_time_gamma <- fitdist(Tx1_times, distr="gamma")
 plot(Tx1_time_gamma)
 Tx1_time_weibull <- fitdist(Tx1_times, distr="weibull")
 plot(Tx1_time_weibull)
-gofstat(list(Tx1_time_exponential, Tx1_time_gamma, Tx1_time_weibull), fitnames=c(
-  "Exponential", "Gamma", "Weibull"
+Tx1_time_uniform <- fitdist(Tx1_times, distr="unif")
+plot(Tx1_time_uniform)
+gofstat(list(Tx1_time_exponential, Tx1_time_gamma, Tx1_time_weibull, Tx1_time_uniform), fitnames=c(
+  "Exponential", "Gamma", "Weibull", "Uniform"
 ))
 
-#Weibull is the best fit, but I would personally just use the mean.
+#Turns out uniform is the closest-fitting distribution.
 
 #If the patient has a major complication they will discontinue treatment. So we will only look at C1.
 Tx1_time_to_major <- vector()
@@ -183,8 +185,10 @@ for (i in 1:length(C1_events)) {
 
 Tx1_major_gamma <- fitdist(Tx1_time_to_major, distr="gamma")
 Tx1_major_weibull <- fitdist(Tx1_time_to_major, distr="weibull")
+Tx1_major_exp <- fitdist(Tx1_time_to_major, distr="exp")
 plot(Tx1_major_gamma)
 plot(Tx1_major_weibull)
+plot(Tx1_major_exp) #exponential is miles off
 gofstat(list(Tx1_major_gamma, Tx1_major_weibull), fitnames=c("gamma", "weibull"))
 
 #For time to major, the gamma distribution seems to be a slightly better fit.
