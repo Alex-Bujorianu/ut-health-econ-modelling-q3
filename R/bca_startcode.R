@@ -135,9 +135,9 @@ func.utility <- function(position){
   return(utility)
 }
 
-#Calculate qaly for a patient
-qaly=0
+#This function needs to return a total
 func.qaly <- function(position, Tx1.time, Tx2.time, followup1.time){
+  qaly=0
   if (position<4){
     qaly=qaly+(func.utility(position) * Tx1.time /365)
   }
@@ -147,6 +147,7 @@ func.qaly <- function(position, Tx1.time, Tx2.time, followup1.time){
   else if (position>4 && position<8){
     qaly=qaly+(func.utility(position)*Tx2.time/365)
   }
+  #Patient has completed full cycle.
   else {
     qaly=qaly+(func.utility(position)*palliative.time()/365)
   }
