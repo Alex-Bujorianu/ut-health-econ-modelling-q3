@@ -106,7 +106,7 @@ func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.ti
   return(total_cost)
 }
 
-#Utility of a patient depending on wehere they are in a cycle
+#Utility of a patient depending on where they are in a cycle
 func.utility <- function(position){
   if  (position<5){ #in tx1
     utility =0.55
@@ -135,14 +135,15 @@ func.utility <- function(position){
   return(utility)
 }
 
-#This function needs to return a total
+#This function does NOT return a total. It only returns the qalys during a specific cycle.
+#Therefore, it must be called up during each cycle and the result added to the patient's cumulative total.
 func.qaly <- function(position, Tx1.time, Tx2.time, followup1.time){
   qaly=0
   if (position<4){
     qaly=qaly+(func.utility(position) * Tx1.time /365)
   }
   else if (position==4){
-    qaly=qaly+(func.utility(position)*followup1.time/365)
+    qaly=qaly+(func.utility(position)*followup1.time/365) #add the utility during followup, which is 10% higher
   }
   else if (position>4 && position<8){
     qaly=qaly+(func.utility(position)*Tx2.time/365)
@@ -254,6 +255,8 @@ palliative.time <- function() {
 
 
 ## Section 4: Discrete event simulation model ----
+
+# TO DO: record the qalys for each patient.
 
 # Define the model structure for the current practice, i.e. best standard care (BSC)
 bsc.model <- trajectory()%>%
