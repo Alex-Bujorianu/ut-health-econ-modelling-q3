@@ -190,3 +190,66 @@ gofstat(list(Tx1_major_gamma, Tx1_major_weibull), fitnames=c("gamma", "weibull")
 #For time to major, the gamma distribution seems to be a slightly better fit.
 
 # I am going to assume that Tx2 is symmetrical with Tx1 and we can use the same values for both. 
+
+
+#startified porbabilities
+major_poor_response=0
+major_good_response=0
+major_poor_nonresponse=0
+major_good_nonresponse=0
+minor_poor_response=0
+minor_good_response=0
+minor_poor_nonresponse=0
+minor_good_nonresponse=0
+
+i=0
+for(i in 1:length(data$Poor)){
+  if(data$Poor[i] == 1) {
+    if (data$Tx1.C1.Dx.Pet[i]==1){
+      if (data$Tx1.C1.Event[i] == 2) {
+        major_poor_response=major_poor_response+1
+      }
+      else if (data$Tx1.C1.Event[i] == 3) {
+        minor_poor_response=minor_poor_response+1
+      }
+    }
+    else if (data$Tx1.C1.Dx.Pet[i]==0){
+      if (data$Tx1.C1.Event[i] == 2) {
+        major_poor_nonresponse=major_poor_nonresponse+1
+      }
+      else if (data$Tx1.C1.Event[i] == 3) {
+        minor_poor_nonresponse=minor_poor_nonresponse+1
+      }
+    }
+  }
+  else if (data$Poor[i] == 0) {
+    if (data$Tx1.C1.Dx.Pet[i]==1){
+      if (data$Tx1.C1.Event[i] == 2) {
+        major_good_response=major_good_response+1
+      }
+      else if (data$Tx1.C1.Event[i] == 3) {
+        minor_good_response=minor_good_response+1
+      }
+    }
+    else if (data$Tx1.C1.Dx.Pet[i]==0){
+      if (data$Tx1.C1.Event[i] == 2) {
+        major_good_nonresponse=major_good_nonresponse+1
+      }
+      else if (data$Tx1.C1.Event[i] == 3) {
+        minor_good_nonresponse=minor_good_nonresponse+1
+      }
+    }
+  }
+}
+
+prob_major_good_response=(major_good_response/sum(data$Poor==0 & data$Tx1.C1.Dx.Pet==1))
+prob_minor_good_response=(minor_good_response/sum(data$Poor==0 & data$Tx1.C1.Dx.Pet==1))
+
+prob_major_good_nonresponse=(major_good_nonresponse/sum(data$Poor==0 & data$Tx1.C1.Dx.Pet==0))
+prob_minor_good_nonresponse=(minor_good_nonresponse/sum(data$Poor==0 & data$Tx1.C1.Dx.Pet==0))
+
+prob_major_poor_response=(major_poor_response/sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==1))
+prob_minor_poor_response=(minor_poor_response/sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==1))
+
+prob_major_poor_nonresponse=(major_poor_nonresponse/sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==0))
+prob_minor_poor_nonresponse=(minor_poor_nonresponse/sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==0))
