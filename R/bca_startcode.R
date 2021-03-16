@@ -433,7 +433,7 @@ plot(bsc.model)
 # Simulation settings
 set.seed(5678);       # random number seed for reproducibility
 n.patients <- 100;    # number of patients to simulate 
-mon.patients <- 2;    # level of monitoring (see add_generator)
+mon.patients <- 5;    # level of monitoring (see add_generator)
 
 # Define simulation for the best standard care (bsc)
 bsc.sim <- simmer() %>%
@@ -450,6 +450,6 @@ bsc.sim %>%
 # Get the outcomes for the monitored attributes
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.complications", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
+View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.complications", "Tx2.Event", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
 
 

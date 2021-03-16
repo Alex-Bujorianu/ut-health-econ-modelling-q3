@@ -147,8 +147,8 @@ C2_events <- data$Tx1.C2.Event
 C2_time_to_death <- vector()
 for (i in 1:length(C2_events)) {
   if (!is.na(C2_events[i]) && C2_events[i] == 1) {
-    #If the patient dies in C2, the time to death is the amount spent in Tx1.C2 PLUS the time they spent in C1
-    C2_time_to_death <- c(C2_time_to_death, sum(data$Tx1.C2.Time[i], data$Tx1.C1.Time[i]))
+    #We are only calculating the time they spend in this individual subcycle!
+    C2_time_to_death <- c(C2_time_to_death, data$Tx1.C2.Time[i])
   }
 }
 Tx1_times <- c(C1_time_to_death, C2_time_to_death)
