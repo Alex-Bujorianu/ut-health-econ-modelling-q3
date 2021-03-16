@@ -190,7 +190,7 @@ gofstat(list(Tx1_major_gamma, Tx1_major_weibull), fitnames=c("gamma", "weibull")
 # I am going to assume that Tx2 is symmetrical with Tx1 and we can use the same values for both. 
 
 
-#startified porbabilities
+#Calculating stratified probabilities of major and minor complications
 major_poor_response=0
 major_good_response=0
 major_poor_nonresponse=0
@@ -201,9 +201,9 @@ minor_poor_nonresponse=0
 minor_good_nonresponse=0
 
 i=0
-for(i in 1:length(data$Poor)){
-  if(data$Poor[i] == 1) {
-    if (data$Tx1.C1.Dx.Pet[i]==1){
+for(i in 1:length(data$Poor)){ 
+  if(data$Poor[i] == 1) {  #dividing the data as per clinical condition
+    if (data$Tx1.C1.Dx.Pet[i]==1){ #dividing the data as per response
       if (data$Tx1.C1.Event[i] == 2) {
         major_poor_response=major_poor_response+1
       }
@@ -251,3 +251,30 @@ prob_minor_poor_response=(minor_poor_response/sum(data$Poor==1 & data$Tx1.C1.Dx.
 
 prob_major_poor_nonresponse=(major_poor_nonresponse/sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==0))
 prob_minor_poor_nonresponse=(minor_poor_nonresponse/sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==0))
+
+
+#Stratify the patients’ utility during Tx1 treatment according to their treatment response, based on C1 of Tx1
+Tx1_utility_responders <- vector()
+Tx1_utility_nonresponders <- vector()
+i=0
+for (i in 1:length(data$Tx1.C1.Dx.Pet)) {
+  if (data$Tx1.C1.Dx.Pet[i] == 1) {
+    Tx1_utility_responders <- c(Tx1_utility_responders,data$Tx1.C1.QoL[i])
+  }
+  else if (data$Tx1.C1.Dx.Pet[i]==0) {
+    Tx1_utility_nonresponders <- c(Tx1_utility_nonresponders, data$Tx1.C1.QoL[i])
+  }
+}
+
+#Stratify the patients’ utility during Tx2 treatment according to their treatment response, based on C1 of Tx2 (do not stratify the disutility)
+Tx2_utility_responders <- vector()
+Tx2_utility_nonresponders <- vector()
+i=0
+for (i in 1:length(data$Tx2.C1.Dx.Pet)) {
+  if (!is.na(data$Tx2.C1.Dx.Pet[i]) && data$Tx2.C1.Dx.Pet[i] == 1) {
+    Tx2_utility_responders <-c(Tx2_utility_responders,data$Tx2.C1.QoL[i])
+  }
+  else if (!is.na(data$Tx2.C1.Dx.Pet[i]) && data$Tx2.C1.Dx.Pet[i]==0) {
+    Tx2_utility_nonresponders <- c(Tx2_utility_nonresponders,data$Tx2.C1.QoL[i])
+  }
+}
