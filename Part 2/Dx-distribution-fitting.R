@@ -74,7 +74,7 @@ m_vect <- cbind(Test1_responders,
 
 m_cov <- cov(m_vect) # create covariance matrix
 v_means <-  c(mean(Test1_responders), mean(Test2_responders), mean(Test3_responders))
-Test_results_responders <- rmvnorm(n = 1, mean = v_means, sigma = m_cov) #Test results for responders
+rmvnorm(n = 1, mean = v_means, sigma = m_cov) #Test results for responders
 
 plot(density(Test1_responders), col = 'red', xlim = c(-5, 10), ylim = c(0, 2), main = 'Density functions') # plot the different density functions
 lines(density(Test2_responders), col = 'darkgray')
@@ -90,7 +90,7 @@ non_m_vect <- cbind(Test1_nonresponders,
 non_m_cov <- cov(non_m_vect)
 non_v_means <-  c(mean(Test1_nonresponders), mean(Test2_nonresponders), mean(Test3_nonresponders))
 
-Test_results_nonresponders <- rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
+rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
 
 #We are doing a multivariate distribution because the tests are correlated
 #MGF theory tells us that if you add 3 normal distributions, you end up with a normal distribution 

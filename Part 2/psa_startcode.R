@@ -77,8 +77,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     }
     
     func.tx1.response <- function() {
-      prob_tx1_response <- 1;
-      response <- ifelse(prob_tx1_response >= runif(1), 1, 0); #1 is response, 0 is non-response
+      prob_tx1_response <- length(Test1_responders) / length(Test1_responders) + length(Test2_nonresponders);
+      response <- ifelse(prob_tx1_response <= runif(1), 1, 0); #1 is response, 0 is non-response
       return(response)
     }
     
