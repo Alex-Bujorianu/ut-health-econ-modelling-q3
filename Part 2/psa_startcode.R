@@ -6,13 +6,15 @@ rm(list=ls()); gc();
 library(parallel);
 library(doSNOW);
 
-# Set the working directory
-setwd("Part 2/");
+# Do not set the working directory. Do this manually.
+#setwd("Part 2/");
 
-# Load funtions for extracting monitored attributes
+# Load functions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
 source("getMultipleAttributes.R", echo=T);
 
+#Load the test results from the distribution fitting file
+source("Dx-distribution-fitting.R", echo=T)
 
 
 ## Section 2: Simulation function ----
@@ -692,4 +694,4 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
 
 ## Section 3: Run simulations
 
-psa.out <- runPSA(n.patients=100, n.runs=10);
+psa.out <- runPSA(n.patients=100, n.runs=10)
