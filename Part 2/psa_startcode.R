@@ -7,7 +7,7 @@ library(parallel);
 library(doSNOW);
 
 # Set the working directory
-#setwd("C:/path/to/your/AHEM files/");
+setwd("Part 2/");
 
 # Load funtions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);

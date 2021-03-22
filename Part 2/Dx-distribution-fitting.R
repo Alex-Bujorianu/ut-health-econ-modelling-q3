@@ -49,3 +49,5 @@ Nonresponders <- c(Test1_nonresponders, Test2_nonresponders, Test3_nonresponders
 
 hist(Responders)
 hist(Nonresponders)
+
+#Those are some wacky histograms. 
