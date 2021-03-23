@@ -100,7 +100,7 @@ rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
 
 #Determine threshold values for the 3 tests
 
-quantile(c(Test1_responders, Test2_responders, Test3_responders), c(0.8, 0.8, 0.8))
+quantile(Test1_responders, 0.8)
 quantile(Test1_nonresponders, 0.2)
 #0.71 is the exact value by which they diverge
 test1_boundary <- 0.71
@@ -115,3 +115,34 @@ quantile(Test3_nonresponders, 0.2)
 #They overlap more
 test3_boundary <- mean(c(quantile(Test3_responders, 0.8),
      quantile(Test3_nonresponders, 0.2)))
+
+validation <- vector()
+
+for (i in 1:length(data$Tx1.C1.Dx.Pet)) {
+  #Let's classify them as non-responder if ONE condition is higher than the threshold
+  if (data$Tx1.C1.Dx.Test1[i] > test1_boundary || data$Tx1.C1.Dx.Test2[i] > test2_boundary 
+      || data$Tx1.C1.Dx.Test3[i] > test3_boundary) {
+    validation <- c(validation, 0)
+  }
+  else {
+    validation <- c(validation, 1)
+  }
+}
+
+hitrate <- vector()
+for (i in 1:length(data$Tx1.C1.Dx.Pet)) {
+  if (data$Tx1.C1.Dx.Pet[i] == validation[i]) {
+    hitrate <- c(hitrate, TRUE)
+  }
+  else {
+    hitrate <- c(hitrate, FALSE)
+  }
+}
+
+
+print(sum(hitrate==TRUE) / length(hitrate))
+
+# These boundaries seem to work!
+
+apply( m_vect , 2 , quantile , probs = 0.8 , na.rm = TRUE )
+apply( non_m_vect , 2 , quantile , probs = 0.2 , na.rm = TRUE ) #produces same numbers as doing it individually
