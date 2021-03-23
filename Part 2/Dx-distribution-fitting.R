@@ -74,6 +74,7 @@ m_vect <- cbind(Test1_responders,
 
 m_cov <- cov(m_vect) # create covariance matrix
 v_means <-  c(mean(Test1_responders), mean(Test2_responders), mean(Test3_responders))
+print(v_means)
 rmvnorm(n = 1, mean = v_means, sigma = m_cov) #Test results for responders
 
 plot(density(Test1_responders), col = 'red', xlim = c(-5, 10), ylim = c(0, 2), main = 'Density functions') # plot the different density functions
@@ -89,9 +90,28 @@ non_m_vect <- cbind(Test1_nonresponders,
                     Test3_nonresponders)
 non_m_cov <- cov(non_m_vect)
 non_v_means <-  c(mean(Test1_nonresponders), mean(Test2_nonresponders), mean(Test3_nonresponders))
+print(non_v_means)
 
 rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
 
 #We are doing a multivariate distribution because the tests are correlated
 #MGF theory tells us that if you add 3 normal distributions, you end up with a normal distribution 
 #whose mean is the sum of the other 3 means
+
+#Determine threshold values for the 3 tests
+
+quantile(Test1_responders, 0.8)
+quantile(Test1_nonresponders, 0.2)
+#0.71 is the exact value by which they diverge
+test1_boundary <- 0.71
+
+quantile(Test2_responders, 0.8)
+quantile(Test2_nonresponders, 0.2)
+#0 for the 2nd test
+test2_boundary <- 0
+
+quantile(Test3_responders, 0.8)
+quantile(Test3_nonresponders, 0.2)
+#They overlap more
+test3_boundary <- mean(c(quantile(Test3_responders, 0.8),
+     quantile(Test3_nonresponders, 0.2)))
