@@ -523,8 +523,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
       
       # First-line treatment
-      set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles")),
-                    response = get_attribute(exp.sim, "responder")) %>%                                                 # select the event to happen in this treatment cycle          
+      set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles"),
+                    response = get_attribute(exp.sim, "responder")) ) %>%                                                 # select the event to happen in this treatment cycle          
       branch(option=function() get_attribute(exp.sim, "Tx1.Event"), continue=c(T, F, F, T, T), #don't forget 5th is false
              
              # Event 1: Full cycle
@@ -755,4 +755,4 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
 
 ## Section 3: Run simulations
 
-psa.out <- runPSA(n.patients=100, n.runs=10)
+psa.out <- runPSA(n.patients=100, n.runs=2)
