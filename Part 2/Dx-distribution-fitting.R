@@ -102,19 +102,20 @@ rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
 
 quantile(Test1_responders, 0.8)
 quantile(Test1_nonresponders, 0.2)
-#0.71 is the exact value by which they diverge
-test1_boundary <- 0.71
+quantile (data$Tx1.C1.Dx.Test1[data$Tx1.C1.Dx.Pet==0], probs=0.80, na.rm=FALSE)
+test1_boundary <- quantile (data$Tx1.C1.Dx.Test1[data$Tx1.C1.Dx.Pet==0], probs=0.80, na.rm=FALSE)
 
+quantile (data$Tx1.C1.Dx.Test2[data$Tx1.C1.Dx.Pet==0], probs=0.80, na.rm=FALSE)
 quantile(Test2_responders, 0.8)
 quantile(Test2_nonresponders, 0.2)
 #0 for the 2nd test
-test2_boundary <- 0
+test2_boundary <- quantile (data$Tx1.C1.Dx.Test2[data$Tx1.C1.Dx.Pet==0], probs=0.80, na.rm=FALSE)
 
+quantile (data$Tx1.C1.Dx.Test3[data$Tx1.C1.Dx.Pet==0], probs=0.80, na.rm=FALSE)
 quantile(Test3_responders, 0.8)
 quantile(Test3_nonresponders, 0.2)
 #They overlap more
-test3_boundary <- mean(c(quantile(Test3_responders, 0.8),
-     quantile(Test3_nonresponders, 0.2)))
+test3_boundary <- quantile (data$Tx1.C1.Dx.Test3[data$Tx1.C1.Dx.Pet==0], probs=0.80, na.rm=FALSE)
 
 validation <- vector()
 

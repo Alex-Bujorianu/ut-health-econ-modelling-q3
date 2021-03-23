@@ -5,6 +5,7 @@ rm(list=ls()); gc();
 # Load the required packages
 library(parallel);
 library(doSNOW);
+library(SimDesign);
 
 # Do not set the working directory. Do this manually.
 #setwd("Part 2/");
@@ -181,47 +182,63 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     
     ## Supportive functions ----
     
-    # Function for determining the event to happen in Tx1
-    Tx1.Event <- function(cycles, response) { #careful! This function now takes cycles as a parameter, AND responder status
-      minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
-      major_comp <- ifelse(runif(1) < 0.04, 1, 0);
-      death <- ifelse(runif(1) < 0.03, 1, 0);
-      #Patient is a responder, see how they are doing with treatment
-      if (cycles>1 && response==1) {
+    #This is a helper function for Tx1.Event
+    #I had to refactor
+    Tx1.continue <- function(response) {
+      if (response==1) {
         test_results <- rmvnorm(n = 1, mean = v_means, sigma = m_cov)
         first_test <- test_results[1]
         second_test <- test_results[2]
         third_test <- test_results[3]
-        #The patient is probably not responding if ONE value is too high
         if (first_test > test1_boundary || second_test > test2_boundary || third_test > test3_boundary) {
-          return(5) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+          return(FALSE) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+        }
+        else {
+          return(TRUE)
         }
       }
-      else if (cycles>1 && response==0) {
+      else {
         test_results_nonresponder <- rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
         first_test_non <- test_results_nonresponder[1]
         second_test_non <- test_results_nonresponder[2]
         third_test_non <- test_results_nonresponder[3]
         if (first_test_non > test1_boundary || second_test_non > test2_boundary || third_test_non > test3_boundary) {
-          return(5) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+          return(FALSE) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+        }
+        else {
+          return(TRUE)
         }
       }
-      else if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
+    }
+    
+    # Function for determining the event to happen in Tx1
+    #This function now takes cycles as a parameter, AND responder status
+    Tx1.Event <- function(cycles, response) {
+      minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
+      major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+      death <- ifelse(runif(1) < 0.03, 1, 0);
+      #First check to see if the patient is alive, then check for complications
+      if (death == 1) {
+        return(2)
+      }
+      else if (cycles > 4){ #if the patient has survived the cycles, they are taken out of the simulation
         return(5)
-      } 
+      }
+      #Stop the treatment if the patient is not responding, do not overtreat
+      #This is a bit dodgy because we know it a priori in the simulation but not in real life
+      else if (cycles > 0 && Tx1.continue(response)==FALSE) {
+        return(5)
+      }
       else if (minor_comp == 1) {
         return(4) 
       }
       else if (major_comp == 1) {
         return(3)
       }
-      else if (death == 1) {
-        return(2)
-      }
       else {
         return(1)
-      }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
-    } 
+      }                                                                         
+    }
     
     # Function for determining the event to happen in Tx2
     Tx2.Event <- function(cycles) {
@@ -268,7 +285,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       }
     }
     
-    #Tx2 is identical to tx1
+    #Tx2 is no longer identical to tx1
     Tx2.time <- function(Tx2.Event) {
       #If patient has no issues or only minor complications, the full cycle duration occurs
       if (Tx2.Event == 1 || Tx2.Event == 4) {
