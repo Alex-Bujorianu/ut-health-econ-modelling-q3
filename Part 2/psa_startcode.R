@@ -192,7 +192,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
         first_test <- test_results[1]
         second_test <- test_results[2]
         third_test <- test_results[3]
-        if (first_test > test1_boundary && second_test > test2_boundary && third_test > test3_boundary) {
+        #The patient is probably not responding if ONE value is too high
+        if (first_test > test1_boundary || second_test > test2_boundary || third_test > test3_boundary) {
           return(5) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
         }
       }
@@ -201,7 +202,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
         first_test_non <- test_results_nonresponder[1]
         second_test_non <- test_results_nonresponder[2]
         third_test_non <- test_results_nonresponder[3]
-        if (first_test_non > test1_boundary && second_test_non > test2_boundary && third_test_non > test3_boundary) {
+        if (first_test_non > test1_boundary || second_test_non > test2_boundary || third_test_non > test3_boundary) {
           return(5) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
         }
       }
