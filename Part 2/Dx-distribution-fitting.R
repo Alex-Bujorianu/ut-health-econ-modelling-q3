@@ -100,7 +100,7 @@ rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
 
 #Determine threshold values for the 3 tests
 
-quantile(Test1_responders, 0.8)
+quantile(c(Test1_responders, Test2_responders, Test3_responders), c(0.8, 0.8, 0.8))
 quantile(Test1_nonresponders, 0.2)
 #0.71 is the exact value by which they diverge
 test1_boundary <- 0.71

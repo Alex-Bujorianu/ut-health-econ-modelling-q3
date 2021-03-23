@@ -14,7 +14,7 @@ source("getSingleAttribute.R", echo=T);
 source("getMultipleAttributes.R", echo=T);
 
 #Load the test results from the distribution fitting file
-source("Dx-distribution-fitting.R", echo=T)
+source("Dx-distribution-fitting.R", echo=T);
 
 
 ## Section 2: Simulation function ----
@@ -77,7 +77,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     }
     #Baseline function for response. About 45% of patients are responders.
     func.tx1.response <- function() {
-      prob_tx1_response <- length(Test1_responders) / length(Test1_responders) + length(Test2_nonresponders);
+      prob_tx1_response <- length(Test1_responders) / length(Test1_responders) + length(Test1_nonresponders);
       response <- ifelse(prob_tx1_response <= runif(1), 1, 0); #1 is response, 0 is non-response
       return(response)
     }
@@ -182,11 +182,30 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     ## Supportive functions ----
     
     # Function for determining the event to happen in Tx1
-    Tx1.Event <- function(cycles) { #careful! This function now takes cycles as a parameter
+    Tx1.Event <- function(cycles, response) { #careful! This function now takes cycles as a parameter, AND responder status
       minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
       major_comp <- ifelse(runif(1) < 0.04, 1, 0);
       death <- ifelse(runif(1) < 0.03, 1, 0);
-      if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
+      #Patient is a responder, see how they are doing with treatment
+      if (cycles>1 && response==1) {
+        test_results <- rmvnorm(n = 1, mean = v_means, sigma = m_cov)
+        first_test <- test_results[1]
+        second_test <- test_results[2]
+        third_test <- test_results[3]
+        if (first_test > test1_boundary && second_test > test2_boundary && third_test > test3_boundary) {
+          return(5) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+        }
+      }
+      else if (cycles>1 && response==0) {
+        test_results_nonresponder <- rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
+        first_test_non <- test_results_nonresponder[1]
+        second_test_non <- test_results_nonresponder[2]
+        third_test_non <- test_results_nonresponder[3]
+        if (first_test_non > test1_boundary && second_test_non > test2_boundary && third_test_non > test3_boundary) {
+          return(5) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+        }
+      }
+      else if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
         return(5)
       } 
       else if (minor_comp == 1) {
@@ -288,11 +307,13 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="Tx2.Complications", value=0) %>%
       set_attribute(key="position", value=0) %>%
       set_attribute(key="qalys", value=0) %>%
+      set_attribute(key="responder", value=function() func.tx1.response()) %>%
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
       
       # First-line treatment
-      set_attribute(key="Tx1.Event", value=function() Tx1.Event(cycles = get_attribute(bsc.sim, "Tx1.Cycles"))) %>%                                                 # select the event to happen in this treatment cycle          
-      branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F, F, T, T), #don't forget 5th is false
+      set_attribute(key="Tx1.Event", value=function() Tx1.Event(cycles = get_attribute(bsc.sim, "Tx1.Cycles"), 
+                                                                response = get_attribute(bsc.sim, "responder"))) %>%                                                 # select the event to happen in this treatment cycle          
+      branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F, F, T, T), #fifth value goes to next treatment pathway
              
              # Event 1: Full cycle
              trajectory() %>%
