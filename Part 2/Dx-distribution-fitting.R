@@ -9,7 +9,7 @@ load("trial_dataset.RData")
 #This is what it says on the PDF
 #I will distinguish between responders and non-responders
 #I am going to combine the data and fit a multivariate normal distribution
-#I would rather just fit separate distributions for each of the 3 tests, but whatever
+#This is because the test results are correlated
 
 Test1 <- data$Tx1.C1.Dx.Test1
 Test2 <- data$Tx1.C1.Dx.Test2

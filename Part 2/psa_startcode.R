@@ -283,7 +283,61 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       else {
         return(1)
       }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
-    } 
+    }
+    #Helper function for Tx2.Event.alt
+    Tx2.continue <- function(Tx1.cycles, response) {
+      #Responders
+      if (response==1) {
+        decision <- switch(Tx1.cycles, #This switch evaluates based on the ORDER. If Tx1.cycles = 4 it evaluates the 4th statement.
+                        'first-cycle'=ifelse(0.52 >= runif(1), TRUE, FALSE), #if responding, continue
+                        'second-cycle'=ifelse(0.54 >= runif(1), TRUE, FALSE),
+                        'third-cycle'=ifelse(0.56 >= runif(1), TRUE, FALSE),
+                        'fourth-cycle'=ifelse(0.58 >= runif(1), TRUE, FALSE),
+                        'fifth-cycle'=ifelse(0.6 >= runif(1), TRUE, FALSE)
+        )
+        return(decision)
+      }
+      #Non responders
+      else {
+        decision <- switch(Tx1.cycles, #This switch evaluates based on the ORDER. If Tx1.cycles = 4 it evaluates the 4th statement.
+                           'first-cycle'=ifelse(0.9 >= runif(1), TRUE, FALSE), #if responding, continue
+                           'second-cycle'=ifelse(0.78 >= runif(1), TRUE, FALSE),
+                           'third-cycle'=ifelse(0.66 >= runif(1), TRUE, FALSE),
+                           'fourth-cycle'=ifelse(0.54 >= runif(1), TRUE, FALSE),
+                           'fifth-cycle'=ifelse(0.42 >= runif(1), TRUE, FALSE)
+        )
+        return(decision)
+      }
+    }
+    #Event function for Tx2 in exp sim
+    Tx2.Event.alt <- function(cycles, Tx1.cycles, response) {
+      minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+      major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+      death <- ifelse(runif(1) < 0.03, 1, 0);
+      #Events are mutually exclusive. Test for the events with bigger consequences first.
+      #First check for death
+      if (death == 1) {
+        return(2)
+      }
+      else if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
+        return(5)
+      }
+      #CHECK IF THE PATIENT HAS COMPLETED THE TREATMENT CYCLE FIRST
+      #Otherwise, this simulation will run in an infinite loop.
+      #Check for overtreatment. If Tx2.continue gives us FALSE, put the patient out of the treatment cycle
+      else if (Tx1.cycles > 0 && Tx2.continue(Tx1.cycles, response) == FALSE) {
+        return(5)
+      } 
+      else if (major_comp == 1) {
+        return(3)
+      }
+      else if (minor_comp == 1) {
+        return(4) 
+      }
+      else {
+        return(1)
+      }          
+    }
     
     # Function for determining the event to happen in Follow up 1
     followup1.event <- function() {
@@ -527,7 +581,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       # First-line treatment
       set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles"),
                     response = get_attribute(exp.sim, "responder")) ) %>%                                                 # select the event to happen in this treatment cycle          
-      branch(option=function() get_attribute(exp.sim, "Tx1.Event"), continue=c(T, F, F, T, T), #don't forget 5th is false
+      branch(option=function() get_attribute(exp.sim, "Tx1.Event"), continue=c(T, F, F, T, T),
              
              # Event 1: Full cycle
              trajectory() %>%
@@ -610,8 +664,10 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="Alive", value=0)
       ) %>%
       #Second line treatment
-      set_attribute(key="Tx2.Event", value=function() Tx2.Event(cycles = get_attribute(exp.sim, "Tx2.Cycles"))) %>%                                                 # select the event to happen in this treatment cycle          
-      branch(option=function() get_attribute(exp.sim, "Tx2.Event"), continue=c(T, F, F, T, T), #the 5th has to be false
+      set_attribute(key="Tx2.Event", value=function() Tx2.Event.alt(cycles = get_attribute(exp.sim, "Tx2.Cycles"),
+                    Tx1.cycles = get_attribute(exp.sim, "Tx1.Cycles"), 
+                    response = get_attribute(exp.sim, "responder")))%>%                                                 # select the event to happen in this treatment cycle          
+      branch(option=function() get_attribute(exp.sim, "Tx2.Event"), continue=c(T, F, F, T, T), 
              # Event 1: Full cycle
              trajectory() %>%
                set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(exp.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
@@ -713,7 +769,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       add_generator(name_prefix="Patient", trajectory=exp.model, distribution=at(rep(x=0, times=n.patients)), mon=mon.patients)
     
     # Run the exp simulation
-    exp.sim %>% 
+    exp.sim %>%
       run()
     
     
