@@ -6,7 +6,6 @@ rm(list=ls()); gc();
 library(parallel);
 library(doSNOW);
 library(SimDesign);
-#library(future);
 
 # Do not set the working directory. Do this manually.
 #setwd("Part 2/");
@@ -130,6 +129,13 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     #Function to find total cost
     func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
       total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
+      return(total_cost)
+    }
+    #Function to find costs for the exp model taking into account the costs of the novel diagnostic tests
+    func.exp.costs <- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
+      total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
+      #Note that we do tests at the baseline, so even with 0 cycles we will do at least 1 test
+      total_cost <- total_cost + ((Tx1.Cycles+1) * (278+256+194)) + ((Tx2.Cycles+1) * (278+256+194))
       return(total_cost)
     }
     
