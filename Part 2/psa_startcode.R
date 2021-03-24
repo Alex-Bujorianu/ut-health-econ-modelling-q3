@@ -6,6 +6,7 @@ rm(list=ls()); gc();
 library(parallel);
 library(doSNOW);
 library(SimDesign);
+#library(future);
 
 # Do not set the working directory. Do this manually.
 #setwd("Part 2/");
@@ -16,7 +17,6 @@ source("getMultipleAttributes.R", echo=T);
 
 #Load the test results from the distribution fitting file
 source("Dx-distribution-fitting.R", echo=T);
-
 
 ## Section 2: Simulation function ----
 
@@ -34,7 +34,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
   # Set up the CPU-cluster
   cl <- makeCluster(detectCores()-free.cores);
   registerDoSNOW(cl);
-  clusterExport(cl, c("getSingleAttribute", "getMultipleAttributes"));
+  clusterExport(cl, c("getSingleAttribute", "getMultipleAttributes", 
+                      "v_means", "non_v_means", "m_cov", "non_m_cov",
+                      "test1_boundary", "test2_boundary", "test3_boundary"));
   
   # Multi-threaded/parallel simulations
   results <- parSapply(cl, 1:n.runs, function(run) {
@@ -78,14 +80,14 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     }
     #Baseline function for response. About 45% of patients are responders.
     func.tx1.response <- function() {
-      prob_tx1_response <- length(Test1_responders) / length(Test1_responders) + length(Test1_nonresponders);
-      response <- ifelse(prob_tx1_response <= runif(1), 1, 0); #1 is response, 0 is non-response
+      prob_tx1_response <- 0.488
+      response <- ifelse(prob_tx1_response <= runif(1), 1, 0) #1 is response, 0 is non-response
       return(response)
     }
     
     func.tx2.response <- function() {
-      prob_tx2_response <- 1;
-      response <- ifelse(prob_tx2_response >= runif(1), 1, 0); #1 is response, 0 is non-response
+      prob_tx2_response <- 1
+      response <- ifelse(prob_tx2_response >= runif(1), 1, 0) #1 is response, 0 is non-response
       return(response)
     }
     
@@ -186,7 +188,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     #I had to refactor
     Tx1.continue <- function(response) {
       if (response==1) {
-        test_results <- rmvnorm(n = 1, mean = v_means, sigma = m_cov)
+        test_results <- SimDesign::rmvnorm(n = 1, mean = v_means, sigma = m_cov)
         first_test <- test_results[1]
         second_test <- test_results[2]
         third_test <- test_results[3]
@@ -198,7 +200,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
         }
       }
       else {
-        test_results_nonresponder <- rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
+        test_results_nonresponder <- SimDesign::rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
         first_test_non <- test_results_nonresponder[1]
         second_test_non <- test_results_nonresponder[2]
         third_test_non <- test_results_nonresponder[3]
