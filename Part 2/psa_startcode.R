@@ -331,7 +331,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       #CHECK IF THE PATIENT HAS COMPLETED THE TREATMENT CYCLE FIRST
       #Otherwise, this simulation will run in an infinite loop.
       #Check for overtreatment. If Tx2.continue gives us FALSE, put the patient out of the treatment cycle
-      else if (Tx1.cycles > 0 && Tx2.continue(Tx1.cycles, response) == FALSE) {
+      else if (Tx2.continue(Tx1.cycles, response) == FALSE) {
         return(5)
       } 
       else if (major_comp == 1) {
