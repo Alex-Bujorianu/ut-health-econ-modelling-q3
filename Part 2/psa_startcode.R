@@ -7,16 +7,15 @@ library(parallel);
 library(doSNOW);
 library(SimDesign);
 
-# Set the working directory. Do not forget the ..
-setwd("../Part 2/");
+# We are working with relative paths. Do not set the working directory to anything other than root.
 
 # Load functions for extracting monitored attributes
-source("getSingleAttribute.R", echo=T);
-source("getMultipleAttributes.R", echo=T);
+source("Part 2/getSingleAttribute.R", echo=T);
+source("Part 2/getMultipleAttributes.R", echo=T);
 
 #Load the test results from the distribution fitting file and step 1.4
-source("Dx-distribution-fitting.R", echo=T);
-source("../R/step-1.4.R", echo=T);
+source("Part 2/Dx-distribution-fitting.R", echo=T);
+source("R/step-1.4.R", echo=T);
 
 ## Section 2: Simulation function ----
 
@@ -54,9 +53,6 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     
     
     ## Data analysis
-    
-    # Load the dataset
-    load("trial_dataset.RData");
     
     ## Parameter Definitions
     
@@ -225,9 +221,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     # Function for determining the event to happen in Tx1 for the exp model
     Tx1.Event.alt <- function(cycles, condition, response) {
       #about 10% chance of minor complication, 4% major, 3% death
-      minor_comp <-  if (condition==0 && response==1) ifelse(beta_minor_good_response >= runif(1), 1, 0) else
-        if (condition==1 && response==1) ifelse(beta_minor_poor_response >= runif(1), 1, 0) else
-          if (condition==0 && response==0) ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0) else
+      minor_comp <-  if (condition==0 && response==1) {ifelse(beta_minor_good_response >= runif(1), 1, 0)} else
+        if (condition==1 && response==1) {ifelse(beta_minor_poor_response >= runif(1), 1, 0)} else
+          if (condition==0 && response==0) {ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0)} else
             ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
       major_comp <- ifelse(runif(1) < 0.04, 1, 0);
       death <- ifelse(runif(1) < 0.03, 1, 0);
@@ -256,9 +252,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     
    Tx1.Event <- function(cycles, condition, response) {
     #Roughly: 10% chance of minor complication, 4% major, 3% death
-     minor_comp <-  if (condition==0 && response==1) ifelse(beta_minor_good_response >= runif(1), 1, 0) else
-       if (condition==1 && response==1) ifelse(beta_minor_poor_response >= runif(1), 1, 0) else
-         if (condition==0 && response==0) ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0) else
+     minor_comp <-  if (condition==0 && response==1) {ifelse(beta_minor_good_response >= runif(1), 1, 0)} else
+       if (condition==1 && response==1) {ifelse(beta_minor_poor_response >= runif(1), 1, 0)} else
+         if (condition==0 && response==0) {ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0)} else
            ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
     major_comp <- ifelse(runif(1) < 0.04, 1, 0);
     death <- ifelse(runif(1) < 0.03, 1, 0);
