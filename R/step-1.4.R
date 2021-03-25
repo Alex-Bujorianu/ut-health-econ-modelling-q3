@@ -291,3 +291,28 @@ for (i in 1:length(data$Tx2.C1.Dx.Pet)) {
     Tx2_utility_nonresponders <- c(Tx2_utility_nonresponders,data$Tx2.C1.QoL[i])
   }
 }
+
+#Step 2.7.3
+hist(Tx1_utility_responders)
+dist_lognorm_Tx1_u_r <- fitdist(Tx1_utility_responders, distr = "lnorm")
+#Check
+gofstat(dist_lognorm_Tx1_u_r, fitnames=c("Tx1 utility responders lognormal"))
+plot(dist_lognorm_Tx1_u_r)
+
+hist(Tx1_utility_nonresponders)
+dist_lognorm_Tx1_u_nr <- fitdist(Tx1_utility_nonresponders, distr = "lnorm")
+#Check
+gofstat(dist_lognorm_Tx1_u_nr, fitnames=c("Tx1 utility nonresponders lognormal"))
+plot(dist_lognorm_Tx1_u_nr)
+
+hist(Tx2_utility_responders)
+dist_lognorm_Tx2_u_r <- fitdist(Tx1_utility_responders, distr = "lnorm")
+#Check
+gofstat(dist_lognorm_Tx2_u_r, fitnames=c("Tx2 utility responders lognormal"))
+plot(dist_lognorm_Tx2_u_r)
+
+hist(Tx2_utility_nonresponders)
+dist_lognorm_Tx2_u_nr <- fitdist(Tx2_utility_nonresponders, distr = "lnorm")
+#Check
+gofstat(dist_lognorm_Tx2_u_nr, fitnames=c("Tx2 utility nonresponders lognormal"))
+plot(dist_lognorm_Tx2_u_nr)
