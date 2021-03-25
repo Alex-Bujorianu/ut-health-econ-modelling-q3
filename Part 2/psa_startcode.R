@@ -7,15 +7,16 @@ library(parallel);
 library(doSNOW);
 library(SimDesign);
 
-# Do not set the working directory. Do this manually.
-#setwd("Part 2/");
+# Set the working directory. Do not forget the ..
+setwd("../Part 2/");
 
 # Load functions for extracting monitored attributes
 source("getSingleAttribute.R", echo=T);
 source("getMultipleAttributes.R", echo=T);
 
-#Load the test results from the distribution fitting file
+#Load the test results from the distribution fitting file and step 1.4
 source("Dx-distribution-fitting.R", echo=T);
+source("../R/step-1.4.R", echo=T);
 
 ## Section 2: Simulation function ----
 
@@ -35,7 +36,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
   registerDoSNOW(cl);
   clusterExport(cl, c("getSingleAttribute", "getMultipleAttributes", 
                       "v_means", "non_v_means", "m_cov", "non_m_cov",
-                      "test1_boundary", "test2_boundary", "test3_boundary"));
+                      "test1_boundary", "test2_boundary", "test3_boundary",
+                      "beta_minor_good_nonresponse", "beta_minor_good_response",
+                      "beta_minor_poor_nonresponse", "beta_minor_poor_response"));
   
   # Multi-threaded/parallel simulations
   results <- parSapply(cl, 1:n.runs, function(run) {
@@ -64,7 +67,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     }
     
     func.condition <- function() {
-      prob_poor <- 0.21; #21% of patients are in poor clinical condtion
+      prob_poor <- 0.21; #21% of patients are in poor clinical condition
       condition <- ifelse(prob_poor >= runif(1), 1, 0);
       return(condition)
     }
@@ -220,9 +223,12 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     }
     
     # Function for determining the event to happen in Tx1 for the exp model
-    #This function now takes cycles as a parameter, AND responder status
-    Tx1.Event.alt <- function(cycles, response) {
-      minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
+    Tx1.Event.alt <- function(cycles, condition, response) {
+      #about 10% chance of minor complication, 4% major, 3% death
+      minor_comp <-  if (condition==0 && response==1) ifelse(beta_minor_good_response >= runif(1), 1, 0) else
+        if (condition==1 && response==1) ifelse(beta_minor_poor_response >= runif(1), 1, 0) else
+          if (condition==0 && response==0) ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0) else
+            ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
       major_comp <- ifelse(runif(1) < 0.04, 1, 0);
       death <- ifelse(runif(1) < 0.03, 1, 0);
       #First check to see if the patient is alive, then check for complications
@@ -248,8 +254,12 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       }                                                                         
     }
     
-   Tx1.Event <- function(cycles) {
-    minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
+   Tx1.Event <- function(cycles, condition, response) {
+    #Roughly: 10% chance of minor complication, 4% major, 3% death
+     minor_comp <-  if (condition==0 && response==1) ifelse(beta_minor_good_response >= runif(1), 1, 0) else
+       if (condition==1 && response==1) ifelse(beta_minor_poor_response >= runif(1), 1, 0) else
+         if (condition==0 && response==0) ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0) else
+           ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
     major_comp <- ifelse(runif(1) < 0.04, 1, 0);
     death <- ifelse(runif(1) < 0.03, 1, 0);
     if (death==1) {
@@ -410,12 +420,16 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="Tx1.Time", value=0) %>%
       set_attribute(key="Tx2.Time", value=0) %>%
       set_attribute(key="position", value=0) %>%
+      set_attribute(key="condition", value=function() func.condition()) %>%
+      set_attribute(key="response", value=function() func.tx1.response()) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="cost", value=0) %>% #keep track of each patient's cost  
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
       
       # First-line treatment
-      set_attribute(key="Tx1.Event", value=function() Tx1.Event(cycles = get_attribute(bsc.sim, "Tx1.Cycles"))) %>%                                                 # select the event to happen in this treatment cycle          
+      set_attribute(key="Tx1.Event", value=function() Tx1.Event(cycles = get_attribute(bsc.sim, "Tx1.Cycles"),
+                                                                condition = get_attribute(bsc.sim, "condition"),
+                                                                response = get_attribute(bsc.sim, "response"))) %>%                                                 # select the event to happen in this treatment cycle          
       branch(option=function() get_attribute(bsc.sim, "Tx1.Event"), continue=c(T, F, F, T, T), #fifth value goes to next treatment pathway
              
              # Event 1: Full cycle
@@ -616,14 +630,16 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
       set_attribute(key="Tx2.Complications", value=0) %>%
       set_attribute(key="position", value=0) %>%
-      set_attribute(key="responder", value=function() func.tx1.response()) %>%
+      set_attribute(key="condition", value=function() func.condition()) %>%
+      set_attribute(key="response", value=function() func.tx1.response()) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
       set_attribute(key="Cost", value=0) %>%
       
       # First-line treatment
       set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles"),
-                    response = get_attribute(exp.sim, "responder")) ) %>%                                                 # select the event to happen in this treatment cycle          
+                    condition = get_attribute(exp.sim, "condition"),
+                    response = get_attribute(exp.sim, "response")) ) %>%                                                 # select the event to happen in this treatment cycle          
       branch(option=function() get_attribute(exp.sim, "Tx1.Event"), continue=c(T, F, F, T, T),
              
              # Event 1: Full cycle
