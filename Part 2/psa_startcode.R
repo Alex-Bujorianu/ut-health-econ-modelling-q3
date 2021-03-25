@@ -619,6 +619,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="responder", value=function() func.tx1.response()) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
+      set_attribute(key="Cost", value=0) %>%
       
       # First-line treatment
       set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles"),
@@ -647,7 +648,13 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
-               set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
+               set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
+               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                               get_attribute(exp.sim, "Tx1.Time"),
+                                                                               get_attribute(exp.sim, "Tx1.Complications"),
+                                                                               get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                               get_attribute(exp.sim, "Tx2.Time"),
+                                                                               get_attribute(exp.sim, "Tx2.Complications"))),
              
              # Event 3: Major Complications
              trajectory() %>%
@@ -703,7 +710,14 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                timeout(10)%>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
-               set_attribute(key="Alive", value=0)
+               set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
+               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                                 get_attribute(exp.sim, "Tx1.Time"),
+                                                                                 get_attribute(exp.sim, "Tx1.Complications"),
+                                                                                 get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                                 get_attribute(exp.sim, "Tx2.Time"),
+                                                                                 get_attribute(exp.sim, "Tx2.Complications")))
+             
       ) %>%
       #Second line treatment
       set_attribute(key="Tx2.Event", value=function() Tx2.Event.alt(cycles = get_attribute(exp.sim, "Tx2.Cycles"),
@@ -734,7 +748,13 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
-               set_attribute(key="Alive", value=0),                                                                   # update that the patient has died
+               set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
+               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                                 get_attribute(exp.sim, "Tx1.Time"),
+                                                                                 get_attribute(exp.sim, "Tx1.Complications"),
+                                                                                 get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                                 get_attribute(exp.sim, "Tx2.Time"),
+                                                                                 get_attribute(exp.sim, "Tx2.Complications"))),
              
              # Event 3: Major Complications
              trajectory() %>%
