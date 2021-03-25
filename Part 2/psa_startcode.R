@@ -798,7 +798,14 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
-               release(resource="Fu2", amount=1)
+               release(resource="Fu2", amount=1) %>%
+               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                                 get_attribute(exp.sim, "Tx1.Time"),
+                                                                                 get_attribute(exp.sim, "Tx1.Complications"),
+                                                                                 get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                                 get_attribute(exp.sim, "Tx2.Time"),
+                                                                                 get_attribute(exp.sim, "Tx2.Complications")))
+             
       )
     
     ## Simulations
