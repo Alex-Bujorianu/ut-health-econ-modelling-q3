@@ -407,8 +407,11 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="Tx2.Cycles", value = 0) %>%
       set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
       set_attribute(key="Tx2.Complications", value=0) %>%
+      set_attribute(key="Tx1.Time", value=0) %>%
+      set_attribute(key="Tx2.Time", value=0) %>%
       set_attribute(key="position", value=0) %>%
       set_attribute(key="qalys", value=0) %>%
+      set_attribute(key="cost", value=0) %>% #keep track of each patient's cost  
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
       
       # First-line treatment
@@ -437,6 +440,15 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
+               #Calculate the costs when a patient dies
+               set_attribute(key="cost", value=function() func.cost(
+                 get_attribute(bsc.sim, "Tx1.Cycles"),
+                 get_attribute(bsc.sim, "Tx1.Time"),
+                 get_attribute(bsc.sim, "Tx1.Complications"),
+                 get_attribute(bsc.sim, "Tx2.Cycles"),
+                 get_attribute(bsc.sim, "Tx2.Time"),
+                 get_attribute(bsc.sim, "Tx2.Complications")
+               )) %>%
                set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
              
              # Event 3: Major Complications
@@ -493,6 +505,14 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                timeout(10)%>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 10)) %>%
+               set_attribute(key="cost", value=function() func.cost(
+                 get_attribute(bsc.sim, "Tx1.Cycles"),
+                 get_attribute(bsc.sim, "Tx1.Time"),
+                 get_attribute(bsc.sim, "Tx1.Complications"),
+                 get_attribute(bsc.sim, "Tx2.Cycles"),
+                 get_attribute(bsc.sim, "Tx2.Time"),
+                 get_attribute(bsc.sim, "Tx2.Complications")
+               )) %>%
                set_attribute(key="Alive", value=0)
       ) %>%
       #Second line treatment
@@ -522,6 +542,14 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
+               set_attribute(key="cost", value=function() func.cost(
+                 get_attribute(bsc.sim, "Tx1.Cycles"),
+                 get_attribute(bsc.sim, "Tx1.Time"),
+                 get_attribute(bsc.sim, "Tx1.Complications"),
+                 get_attribute(bsc.sim, "Tx2.Cycles"),
+                 get_attribute(bsc.sim, "Tx2.Time"),
+                 get_attribute(bsc.sim, "Tx2.Complications")
+               )) %>%
                set_attribute(key="Alive", value=0),                                                                   # update that the patient has died
              
              # Event 3: Major Complications
@@ -566,6 +594,14 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
+               set_attribute(key="cost", value=function() func.cost(
+                 get_attribute(bsc.sim, "Tx1.Cycles"),
+                 get_attribute(bsc.sim, "Tx1.Time"),
+                 get_attribute(bsc.sim, "Tx1.Complications"),
+                 get_attribute(bsc.sim, "Tx2.Cycles"),
+                 get_attribute(bsc.sim, "Tx2.Time"),
+                 get_attribute(bsc.sim, "Tx2.Complications")
+               )) %>%
                release(resource="Fu2", amount=1)
       )
     
