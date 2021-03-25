@@ -260,11 +260,14 @@ prob_major_poor_nonresponse=(major_poor_nonresponse/sum(data$Poor==1 & data$Tx1.
 prob_minor_poor_nonresponse=(minor_poor_nonresponse/sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==0))
 
 # Beta distributions for minor complications
-length <- length(data$Tx1.C1.Event)
-beta_minor_good_response <- rbeta(1, minor_good_response, length - minor_good_response)
-beta_minor_good_nonresponse <- rbeta(1, minor_good_nonresponse, length - minor_good_nonresponse)
-beta_minor_poor_response <- rbeta(1, minor_poor_response, length - minor_poor_response)
-beta_minor_poor_nonresponse <- rbeta(1, minor_poor_nonresponse, length - minor_poor_nonresponse)
+n_good_response <- sum(data$Poor==0 & data$Tx1.C1.Dx.Pet==1)
+n_good_nonresponse <- sum(data$Poor==0 & data$Tx1.C1.Dx.Pet==0)
+n_poor_response <- sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==1)
+n_poor_nonresponse <- sum(data$Poor==1 & data$Tx1.C1.Dx.Pet==0)
+beta_minor_good_response <- rbeta(1, minor_good_response, n_good_response - minor_good_response)
+beta_minor_good_nonresponse <- rbeta(1, minor_good_nonresponse, n_good_nonresponse - minor_good_nonresponse)
+beta_minor_poor_response <- rbeta(1, minor_poor_response, n_poor_response - minor_poor_response)
+beta_minor_poor_nonresponse <- rbeta(1, minor_poor_nonresponse, n_poor_nonresponse - minor_poor_nonresponse)
 
 #Stratify the patients’ utility during Tx1 treatment according to their treatment response, based on C1 of Tx1
 Tx1_utility_responders <- vector()
