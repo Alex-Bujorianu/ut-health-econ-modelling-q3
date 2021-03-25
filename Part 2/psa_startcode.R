@@ -94,8 +94,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Complications) {
       Tx1_cyclecost <- rnorm(1, 504, 36);
       Tx1_daycost <- rnorm(1, 8, 1.5);
-      Minor_cost <- 381;
-      Major_cost <- 11032;
+      Minor_cost <- rnorm(1, 381, 41);
+      Major_cost <- rgamma(1, 546, 0.05); ##this is a right skewed gamma dist with mean 11,000 and SE 470
       if (Tx1.Complications == 1){
         cycle1cost <- Tx1_cyclecost * Tx1.cycles + Tx1_daycost * Tx1.time + 1*Minor_cost;
       }
@@ -112,8 +112,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Complications) {
       Tx2_cyclecost <- rnorm(1, 4450, 465);
       Tx2_daycost <- rnorm(1, 14, 2);
-      Minor_cost <- 381;
-      Major_cost <- 11032;
+      Minor_cost <- rnorm(1, 381, 41);
+      Major_cost <- rgamma(1, 546, 0.05);
       if (Tx2.Complications == 1){
         cycle2cost <- Tx2_cyclecost * Tx2.cycles + Tx2_daycost * Tx2.time + 1*Minor_cost;
       }
