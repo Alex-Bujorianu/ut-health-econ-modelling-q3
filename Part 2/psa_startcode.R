@@ -92,8 +92,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     
     #Function to find cycle 1 cost
     func.tx1cost<- function(Tx1.cycles, Tx1.time, Tx1.Complications) {
-      Tx1_cyclecost <- 504;
-      Tx1_daycost <- 8;
+      Tx1_cyclecost <- rnorm(1, 504, 36);
+      Tx1_daycost <- rnorm(1, 8, 1.5);
       Minor_cost <- 381;
       Major_cost <- 11032;
       if (Tx1.Complications == 1){
@@ -110,8 +110,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     
     #Function to find cycle 2 cost
     func.tx2cost<- function(Tx2.cycles, Tx2.time, Tx2.Complications) {
-      Tx2_cyclecost <- 4450;
-      Tx2_daycost <- 14;
+      Tx2_cyclecost <- rnorm(1, 4450, 465);
+      Tx2_daycost <- rnorm(1, 14, 2);
       Minor_cost <- 381;
       Major_cost <- 11032;
       if (Tx2.Complications == 1){
