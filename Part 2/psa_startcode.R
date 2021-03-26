@@ -14,8 +14,8 @@ source("Part 2/getSingleAttribute.R", echo=T);
 source("Part 2/getMultipleAttributes.R", echo=T);
 
 #Load the test results from the distribution fitting file and step 1.4
-source("Part 2/Dx-distribution-fitting.R", echo=T);
-source("R/step-1.4.R", echo=T);
+source("Part 2/Dx-distribution-fitting.R", echo=F);
+source("R/step-1.4.R", echo=F);
 
 ## Section 2: Simulation function ----
 
@@ -276,8 +276,12 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
   }
     
     # Function for determining the event to happen in Tx2
-    Tx2.Event <- function(cycles) {
-      minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+   #We are assuming that the probability of minor complication is the same as in Tx1
+    Tx2.Event <- function(cycles, condition, response) {
+      minor_comp <-  if (condition==0 && response==1) {ifelse(beta_minor_good_response >= runif(1), 1, 0)} else
+        if (condition==1 && response==1) {ifelse(beta_minor_poor_response >= runif(1), 1, 0)} else
+          if (condition==0 && response==0) {ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0)} else
+            ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
       major_comp <- ifelse(runif(1) < 0.04, 1, 0);
       death <- ifelse(runif(1) < 0.03, 1, 0);
       if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
@@ -322,8 +326,11 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       }
     }
     #Event function for Tx2 in exp sim
-    Tx2.Event.alt <- function(cycles, Tx1.cycles, response) {
-      minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+    Tx2.Event.alt <- function(cycles, Tx1.cycles, condition, response) {
+      minor_comp <-  if (condition==0 && response==1) {ifelse(beta_minor_good_response >= runif(1), 1, 0)} else
+        if (condition==1 && response==1) {ifelse(beta_minor_poor_response >= runif(1), 1, 0)} else
+          if (condition==0 && response==0) {ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0)} else
+            ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
       major_comp <- ifelse(runif(1) < 0.04, 1, 0);
       death <- ifelse(runif(1) < 0.03, 1, 0);
       #Events are mutually exclusive. Test for the events with bigger consequences first.
@@ -337,7 +344,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       #CHECK IF THE PATIENT HAS COMPLETED THE TREATMENT CYCLE FIRST
       #Otherwise, this simulation will run in an infinite loop.
       #Check for overtreatment. If Tx2.continue gives us FALSE, put the patient out of the treatment cycle
-      else if (Tx2.continue(Tx1.cycles, response) == FALSE) {
+      else if (cycles > 0 && Tx2.continue(Tx1.cycles, response) == FALSE) {
         return(5)
       } 
       else if (major_comp == 1) {
@@ -416,12 +423,11 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="Tx1.Time", value=0) %>%
       set_attribute(key="Tx2.Time", value=0) %>%
       set_attribute(key="position", value=0) %>%
-      set_attribute(key="condition", value=function() func.condition()) %>%
-      set_attribute(key="response", value=function() func.tx1.response()) %>%
+      set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
+      set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="cost", value=0) %>% #keep track of each patient's cost  
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
-      
       # First-line treatment
       set_attribute(key="Tx1.Event", value=function() Tx1.Event(cycles = get_attribute(bsc.sim, "Tx1.Cycles"),
                                                                 condition = get_attribute(bsc.sim, "condition"),
@@ -526,7 +532,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="Alive", value=0)
       ) %>%
       #Second line treatment
-      set_attribute(key="Tx2.Event", value=function() Tx2.Event(cycles = get_attribute(bsc.sim, "Tx2.Cycles"))) %>%                                                 # select the event to happen in this treatment cycle          
+      set_attribute(key="Tx2.Event", value=function() Tx2.Event(cycles = get_attribute(bsc.sim, "Tx2.Cycles"),
+                                                                condition = get_attribute(bsc.sim, "condition"),
+                                                                response = get_attribute(bsc.sim, "response"))) %>%                                                 # select the event to happen in this treatment cycle          
       branch(option=function() get_attribute(bsc.sim, "Tx2.Event"), continue=c(T, F, F, T, T), #the 5th has to be false
              # Event 1: Full cycle
              trajectory() %>%
@@ -545,7 +553,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
              trajectory() %>%
                set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(bsc.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
                seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
-               timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+               timeout_from_attribute(key="Tx2.Time") %>%                                                               # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%
                log_("Patient has died during second line treatment") %>%
                set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
@@ -626,8 +634,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
       set_attribute(key="Tx2.Complications", value=0) %>%
       set_attribute(key="position", value=0) %>%
-      set_attribute(key="condition", value=function() func.condition()) %>%
-      set_attribute(key="response", value=function() func.tx1.response()) %>%
+      set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
+      set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
       set_attribute(key="Cost", value=0) %>%
@@ -733,8 +741,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       ) %>%
       #Second line treatment
       set_attribute(key="Tx2.Event", value=function() Tx2.Event.alt(cycles = get_attribute(exp.sim, "Tx2.Cycles"),
-                    Tx1.cycles = get_attribute(exp.sim, "Tx1.Cycles"), 
-                    response = get_attribute(exp.sim, "responder")))%>%                                                 # select the event to happen in this treatment cycle          
+                    Tx1.cycles = get_attribute(exp.sim, "Tx1.Cycles"),
+                    condition = get_attribute(exp.sim, "response"),
+                    response = get_attribute(exp.sim, "response")))%>%                                                 # select the event to happen in this treatment cycle          
       branch(option=function() get_attribute(exp.sim, "Tx2.Event"), continue=c(T, F, F, T, T), 
              # Event 1: Full cycle
              trajectory() %>%
