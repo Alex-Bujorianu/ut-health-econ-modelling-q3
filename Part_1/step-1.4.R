@@ -1,6 +1,6 @@
 # Step 1.4 of assignment
 
-load("trial_dataset.RData");
+load("Data/trial_dataset.RData");
 
 library(fitdistrplus)
 

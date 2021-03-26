@@ -10,12 +10,12 @@ library(SimDesign);
 # We are working with relative paths. Do not set the working directory to anything other than root.
 
 # Load functions for extracting monitored attributes
-source("Part 2/getSingleAttribute.R", echo=T);
-source("Part 2/getMultipleAttributes.R", echo=T);
+source("Part_2/getSingleAttribute.R", echo=T);
+source("Part_2/getMultipleAttributes.R", echo=T);
 
 #Load the test results from the distribution fitting file and step 1.4
-source("Part 2/Dx-distribution-fitting.R", echo=F);
-source("R/step-1.4.R", echo=F);
+source("Part_2/Dx-distribution-fitting.R", echo=F);
+source("Part_1/step-1.4.R", echo=F);
 
 ## Section 2: Simulation function ----
 

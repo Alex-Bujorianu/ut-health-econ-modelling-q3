@@ -3,7 +3,7 @@
 library("fitdistrplus")
 library("SimDesign")
 
-load("trial_dataset.RData")
+load("Data/trial_dataset.RData")
 
 #I am only going to fit the data on C1 of Tx1, the first cycle
 #This is what it says on the PDF

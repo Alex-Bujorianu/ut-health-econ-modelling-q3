@@ -27,7 +27,7 @@ source("getMultipleAttributes.R", echo=T);
 ## Section 2: Data analysis ----
 
 # Load the dataset
-load("trial_dataset.RData");
+load("Data/trial_dataset.RData");
 
 # Define parameters
 
