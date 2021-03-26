@@ -759,7 +759,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       #Second line treatment
       set_attribute(key="Tx2.Event", value=function() Tx2.Event.alt(cycles = get_attribute(exp.sim, "Tx2.Cycles"),
                     Tx1.cycles = get_attribute(exp.sim, "Tx1.Cycles"),
-                    condition = get_attribute(exp.sim, "response"),
+                    condition = get_attribute(exp.sim, "condition"),
                     response = get_attribute(exp.sim, "response")))%>%                                                 # select the event to happen in this treatment cycle          
       branch(option=function() get_attribute(exp.sim, "Tx2.Event"), continue=c(T, F, F, T, T), 
              # Event 1: Full cycle
