@@ -130,11 +130,28 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
       return(total_cost)
     }
+    
+    # incorporating uncertainties of costs for the diagnostic tests:
+    func.dx1cost <-function(){
+      dx1cost <- rnorm(1, 278, 4)
+      return(dx1cost)
+    }
+    
+    func.dx2cost <-function(){
+      dx2cost <- rnorm(1, 256, 8)
+      return(dx2cost)
+    }
+    
+    func.dx3cost <-function(){
+      dx3cost <- rnorm(1, 194, 2)
+      return(dx3cost)
+    }
+    
     #Function to find costs for the exp model taking into account the costs of the novel diagnostic tests
     func.exp.costs <- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
       total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
       #Note that we do tests at the baseline, so even with 0 cycles we will do at least 1 test
-      total_cost <- total_cost + ((Tx1.Cycles+1) * (278+256+194)) + ((Tx2.Cycles+1) * (278+256+194))
+      total_cost <- total_cost + ((Tx1.Cycles+1) * (func.dx1cost()+func.dx2cost()+func.dx3cost())) + ((Tx2.Cycles+1) * (func.dx1cost()+func.dx2cost()+func.dx3cost()))
       return(total_cost)
     }
     
