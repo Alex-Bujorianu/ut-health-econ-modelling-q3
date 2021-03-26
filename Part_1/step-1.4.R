@@ -323,12 +323,10 @@ plot(dist_lognorm_Tx2_u_nr)
 #2.7.6
 # Distributions for prob. of death in first follow up
 #first I tried it without stratification
+fu <- na.omit(data$FU1.Event)
 n_fu <- length(na.omit(data$FU1.Event)) #n persons 
-r_fu <- 2 #2 events death or lives
-beta_death_followup <- rbeta(1, 2, n_fu - r_fu) # unsure of this
-
-#now trying to stratify based on condition but unsure 
-n_good_fu <- sum(data$Poor==0 & (na.omit(data$FU1.Event)))
-n_poor_fu <- sum(data$Poor==1 & (na.omit(data$FU1.Event)))
+r_fu <- sum(fu==1) #1 is death
+beta_death_followup <- rbeta(1, r_fu, n_fu - r_fu)
+#We are not going to stratify
 
 

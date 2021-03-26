@@ -37,7 +37,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                       "v_means", "non_v_means", "m_cov", "non_m_cov",
                       "test1_boundary", "test2_boundary", "test3_boundary",
                       "beta_minor_good_nonresponse", "beta_minor_good_response",
-                      "beta_minor_poor_nonresponse", "beta_minor_poor_response"));
+                      "beta_minor_poor_nonresponse", "beta_minor_poor_response",
+                      "beta_death_followup"));
   
   # Multi-threaded/parallel simulations
   results <- parSapply(cl, 1:n.runs, function(run) {
@@ -378,7 +379,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     # Function for determining the event to happen in Follow up 1
     followup1.event <- function() {
       #1: patient lives; 2: patient dies
-      prob_death <- ifelse(runif(1) < 0.05, 2, 1);
+      prob_death <- ifelse(runif(1) < beta_death_followup, 2, 1);
       return(prob_death)
     }
     
