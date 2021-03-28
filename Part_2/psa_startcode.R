@@ -38,7 +38,10 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                       "test1_boundary", "test2_boundary", "test3_boundary",
                       "beta_minor_good_nonresponse", "beta_minor_good_response",
                       "beta_minor_poor_nonresponse", "beta_minor_poor_response",
-                      "beta_death_followup"));
+                      "beta_death_followup", "func.tx1_u_r", "func.tx1_u_nr", 
+                      "func.tx2_u_r", "func.tx1_u_nr","Tx1_utility_responders",
+                      "Tx1_utility_nonresponders","Tx2_utility_responders",
+                      "Tx1_utility_nonresponders"));
   
   # Multi-threaded/parallel simulations
   results <- parSapply(cl, 1:n.runs, function(run) {
@@ -156,7 +159,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       return(total_cost)
     }
     
-    #Utility of a patient depending on where they are in a cycle
+    #Utility of a patient depending on where they are in a cycle & their response
     func.utility <- function(position,response){
       if  (position<5){ #in tx1
         if (response==1){ #if patient is responding
@@ -957,4 +960,4 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
 
 ## Section 3: Run simulations
 
-psa.out <- runPSA(n.patients=1000, n.runs=2)
+psa.out <- runPSA(n.patients=100, n.runs=2)
