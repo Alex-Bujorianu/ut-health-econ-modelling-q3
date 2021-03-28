@@ -598,6 +598,9 @@ exp.model <- trajectory()%>%
   # Initialization: do not forget to initialise these cycle attributes or the patients will all die.
   set_attribute(key="Tx1.Cycles", value = 0) %>%
   set_attribute(key="Tx2.Cycles", value = 0) %>%
+  #Do not forget to initialise the times!
+  set_attribute(key="Tx1.Time", value=0) %>%
+  set_attribute(key="Tx2.Time", value=0) %>%
   set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
   set_attribute(key="Tx2.Complications", value=0) %>%
   set_attribute(key="position", value=0) %>%
@@ -803,7 +806,7 @@ plot(exp.model)
 
 # Simulation settings
 set.seed(5678);       # random number seed for reproducibility
-n.patients <- 10000;    # number of patients to simulate 
+n.patients <- 100;    # number of patients to simulate 
 mon.patients <- 5;    # level of monitoring (see add_generator)
 
 # Define simulation for the best standard care (bsc)
