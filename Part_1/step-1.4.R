@@ -352,7 +352,7 @@ func.tx2_u_nr <- function() {
   sd_tx2_u_nr <- sd(Tx2_utility_nonresponders); # SD of utility of patients not responding to treatment in tx2
   location <- log(mean_tx2_u_nr^2 / sqrt(sd_tx2_u_nr^2 + mean_tx2_u_nr^2))
   shape <- sqrt(log(1 + (sd_tx2_u_nr^2 / mean_tx2_u_nr^2)))
-  tx1_u_nr <- rlnorm(n=1, meanlog=location,sdlog=shape)
+  tx2_u_nr <- rlnorm(n=1, meanlog=location,sdlog=shape)
   return(tx2_u_nr)
 }
 

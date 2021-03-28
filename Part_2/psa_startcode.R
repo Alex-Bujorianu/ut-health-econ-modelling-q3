@@ -39,9 +39,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                       "beta_minor_good_nonresponse", "beta_minor_good_response",
                       "beta_minor_poor_nonresponse", "beta_minor_poor_response",
                       "beta_death_followup", "func.tx1_u_r", "func.tx1_u_nr", 
-                      "func.tx2_u_r", "func.tx1_u_nr","Tx1_utility_responders",
+                      "func.tx2_u_r", "func.tx2_u_nr","Tx1_utility_responders",
                       "Tx1_utility_nonresponders","Tx2_utility_responders",
-                      "Tx1_utility_nonresponders"));
+                      "Tx2_utility_nonresponders"));
   
   # Multi-threaded/parallel simulations
   results <- parSapply(cl, 1:n.runs, function(run) {
@@ -165,16 +165,16 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
         if (response==1){ #if patient is responding
           utility=func.tx1_u_r()
         }
-        if (response==0){ #if patient is not responding
+        else if (response==0){ #if patient is not responding
           utility=func.tx1_u_nr()
         }
         if (position==2){ #major complication
           utility	=utility -0.1
         }
-        if (position==3){ #minor complication
+        else if (position==3){ #minor complication
           utility	=utility -0.05
         }
-        if (position==4){#in follow up
+        else if (position==4){#in follow up
           utility =1.1*utility
         }
       }
@@ -182,16 +182,16 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
         if (response==1){ #if patient is responding
           utility=func.tx2_u_r()
         }
-        if (response==0){ #if patient is not responding
+        else if (response==0){ #if patient is not responding
           utility=func.tx2_u_nr()
         }
         if (position==6){ #major complication
           utility	=utility -0.1
         }
-        if (position==7){ #minor complication
+        else if (position==7){ #minor complication
           utility	=utility -0.05
         }
-        if (position==8){#in follow up
+        else if (position==8){#in follow up
           utility =1.1*utility
         }
       }
@@ -420,11 +420,11 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       if (Tx2.Event == 1 || Tx2.Event == 4) {
         return(30);
       }
-      else if (Tx1.Event == 2) {
+      else if (Tx2.Event == 2) {
         time <- runif(n=1, min=2,max=28) #incorporating uncertainties of time to death
         return(time)
       }
-      else if (Tx1.Event == 3) {
+      else if (Tx2.Event == 3) {
         time <- rgamma(n=1, shape=47.61169, rate=8.09397) #incorporating uncertainties of time to major complicatons
         return(time)
       }
