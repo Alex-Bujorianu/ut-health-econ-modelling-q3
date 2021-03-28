@@ -20,14 +20,15 @@ library(fitdistrplus);
 #setwd("R/");
 
 # Load functions for extracting monitored attributes
-source("getSingleAttribute.R", echo=T);
-source("getMultipleAttributes.R", echo=T);
-
+source("Part_1/getSingleAttribute.R", echo=T);
+source("Part_1/getMultipleAttributes.R", echo=T);
 
 ## Section 2: Data analysis ----
 
 # Load the dataset
 load("Data/trial_dataset.RData");
+
+##Important:Run file "Dx-Distribution-fitting" before the rest of this code
 
 # Define parameters
 
@@ -52,12 +53,12 @@ func.age <- function() {
   return(age)
 }
 
+#Baseline function for response. About 45% of patients are responders.
 func.tx1.response <- function() {
-  prob_tx1_response <- 1;
-  response <- ifelse(prob_tx1_response >= runif(1), 1, 0); #1 is response, 0 is non-response
+  prob_tx1_response <- 0.488
+  response <- ifelse(prob_tx1_response <= runif(1), 1, 0) #1 is response, 0 is non-response
   return(response)
 }
-
 func.tx2.response <- function() {
   prob_tx2_response <- 1;
   response <- ifelse(prob_tx2_response >= runif(1), 1, 0); #1 is response, 0 is non-response
@@ -105,6 +106,15 @@ func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.ti
   total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
   return(total_cost)
 }
+
+#Function to find costs for the exp model taking into account the costs of the novel diagnostic tests
+func.exp.costs <- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
+  total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
+  #Note that we do tests at the baseline, so even with 0 cycles we will do at least 1 test
+  total_cost <- total_cost + ((Tx1.Cycles+1) * (278+256+194)) + ((Tx2.Cycles+1) * (278+256+194))
+  return(total_cost)
+}
+
 
 #Utility of a patient depending on where they are in a cycle
 func.utility <- function(position){
@@ -157,6 +167,64 @@ func.qaly <- function(position, Tx1.time, Tx2.time, followup1.time){
 
 ## Section 3: Supportive functions ----
 
+#This is a helper function for Tx1.Event
+#I had to refactor
+Tx1.continue <- function(response) {
+  if (response==1) {
+    test_results <- SimDesign::rmvnorm(n = 1, mean = v_means, sigma = m_cov)
+    first_test <- test_results[1]
+    second_test <- test_results[2]
+    third_test <- test_results[3]
+    if (first_test > test1_boundary || second_test > test2_boundary || third_test > test3_boundary) {
+      return(FALSE) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+    }
+    else {
+      return(TRUE)
+    }
+  }
+  else {
+    test_results_nonresponder <- SimDesign::rmvnorm(n = 1, mean = non_v_means, sigma = non_m_cov)
+    first_test_non <- test_results_nonresponder[1]
+    second_test_non <- test_results_nonresponder[2]
+    third_test_non <- test_results_nonresponder[3]
+    if (first_test_non > test1_boundary || second_test_non > test2_boundary || third_test_non > test3_boundary) {
+      return(FALSE) #patient is not responding to treatment, do not overtreat, go to next treatment pathway
+    }
+    else {
+      return(TRUE)
+    }
+  }
+}
+
+# Function for determining the event to happen in Tx1 for the exp model
+Tx1.Event.alt <- function(cycles, response) {
+  #about 10% chance of minor complication, 4% major, 3% death
+  minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
+  major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+  death <- ifelse(runif(1) < 0.03, 1, 0);
+  #First check to see if the patient is alive, then check for complications
+  if (death == 1) {
+    return(2)
+  }
+  else if (cycles > 4){ #if the patient has survived the cycles, they are taken out of the simulation
+    return(5)
+  }
+  #Stop the treatment if the patient is not responding, do not overtreat
+  #We do these tests BEFORE the treatment cycle. So complications should not occur. 
+  else if (cycles > 0 && Tx1.continue(response)==FALSE) {
+    return(5)
+  }
+  else if (minor_comp == 1) {
+    return(4) 
+  }
+  else if (major_comp == 1) {
+    return(3)
+  }
+  else {
+    return(1)
+  }                                                                         
+}
+
 # Function for determining the event to happen in Tx1
 Tx1.Event <- function(cycles) { #careful! This function now takes cycles as a parameter
   minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication, 4% major, 3% death
@@ -199,7 +267,63 @@ Tx2.Event <- function(cycles) {
   else {
     return(1)
   }                                                                                                  # A return value equal to 0 skips the branch and continues to the next activity.
-} 
+}
+
+#Helper function for Tx2.Event.alt
+Tx2.continue <- function(Tx1.cycles, response) {
+  #Responders
+  if (response==1) {
+    decision <- switch(Tx1.cycles, #This switch evaluates based on the ORDER. If Tx1.cycles = 4 it evaluates the 4th statement.
+                       'first-cycle'=ifelse(0.52 >= runif(1), TRUE, FALSE), #if responding, continue
+                       'second-cycle'=ifelse(0.54 >= runif(1), TRUE, FALSE),
+                       'third-cycle'=ifelse(0.56 >= runif(1), TRUE, FALSE),
+                       'fourth-cycle'=ifelse(0.58 >= runif(1), TRUE, FALSE),
+                       'fifth-cycle'=ifelse(0.6 >= runif(1), TRUE, FALSE)
+    )
+    return(decision)
+  }
+  #Non responders
+  else {
+    decision <- switch(Tx1.cycles, #This switch evaluates based on the ORDER. If Tx1.cycles = 4 it evaluates the 4th statement.
+                       'first-cycle'=ifelse(0.9 >= runif(1), TRUE, FALSE), #if responding, continue
+                       'second-cycle'=ifelse(0.78 >= runif(1), TRUE, FALSE),
+                       'third-cycle'=ifelse(0.66 >= runif(1), TRUE, FALSE),
+                       'fourth-cycle'=ifelse(0.54 >= runif(1), TRUE, FALSE),
+                       'fifth-cycle'=ifelse(0.42 >= runif(1), TRUE, FALSE)
+    )
+    return(decision)
+  }
+}
+#Event function for Tx2 in exp sim
+Tx2.Event.alt <- function(cycles, Tx1.cycles, response) {
+  minor_comp <- ifelse(runif(1) < 0.1, 1, 0); #10% chance of minor complication
+  major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+  death <- ifelse(runif(1) < 0.03, 1, 0);
+  #Events are mutually exclusive. Test for the events with bigger consequences first.
+  #First check for death
+  if (death == 1) {
+    return(2)
+  }
+  else if (cycles>4){ #if the patient has survived the cycles, they are taken out of the simulation
+    return(5)
+  }
+  #CHECK IF THE PATIENT HAS COMPLETED THE TREATMENT CYCLE FIRST
+  #Otherwise, this simulation will run in an infinite loop.
+  #Check for overtreatment. If Tx2.continue gives us FALSE, put the patient out of the treatment cycle
+  else if (cycles > 0 && Tx2.continue(Tx1.cycles, response) == FALSE) {
+    return(5)
+  } 
+  else if (major_comp == 1) {
+    return(3)
+  }
+  else if (minor_comp == 1) {
+    return(4) 
+  }
+  else {
+    return(1)
+  }          
+}
+
 
 # Function for determining the event to happen in Follow up 1
 followup1.event <- function() {
@@ -264,8 +388,13 @@ bsc.model <- trajectory()%>%
   set_attribute(key="Tx2.Cycles", value = 0) %>%
   set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
   set_attribute(key="Tx2.Complications", value=0) %>%
+  set_attribute(key="Tx1.Time", value=0) %>%
+  set_attribute(key="Tx2.Time", value=0) %>%
   set_attribute(key="position", value=0) %>%
+  set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
+  set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
   set_attribute(key="qalys", value=0) %>%
+  set_attribute(key="cost", value=0) %>% #keep track of each patient's cost
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   
   # First-line treatment
@@ -294,6 +423,15 @@ bsc.model <- trajectory()%>%
            set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
            set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                              get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
+           #Calculate the costs when a patient dies
+           set_attribute(key="cost", value=function() func.cost(
+             get_attribute(bsc.sim, "Tx1.Cycles"),
+             get_attribute(bsc.sim, "Tx1.Time"),
+             get_attribute(bsc.sim, "Tx1.Complications"),
+             get_attribute(bsc.sim, "Tx2.Cycles"),
+             get_attribute(bsc.sim, "Tx2.Time"),
+             get_attribute(bsc.sim, "Tx2.Complications")
+           )) %>%
            set_attribute(key="Alive", value=0),                                                                     # update that the patient has died
            
          # Event 3: Major Complications
@@ -331,10 +469,10 @@ bsc.model <- trajectory()%>%
   branch(option=function() get_attribute(bsc.sim, "followup1.event"), continue=c(T, F),
   
   trajectory() %>% #First option: they survive the follow up
-     set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
-     seize(resource="Fu1", amount=1) %>%                                                                     
-     timeout_from_attribute(key="Fu1.Time") %>%                                                              
-     release(resource="Fu1", amount=1) %>%                                                                   
+    set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
+    seize(resource="Fu1", amount=1) %>%                                                                     
+    timeout_from_attribute(key="Fu1.Time") %>%                                                              
+    release(resource="Fu1", amount=1) %>%                                                                   
     # rollback(amount=6, times=Inf),
     set_attribute(key="position", value=4) %>%
     set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
@@ -342,14 +480,22 @@ bsc.model <- trajectory()%>%
     timeout(10),
 
   trajectory() %>% #Second option: they die during the follow up
-     set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
-     seize(resource="Fu1", amount=1) %>%                                                                     
-     timeout_from_attribute(key="Fu1.Time") %>%                                                              
-     release(resource="Fu1", amount=1) %>%
+    set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(bsc.sim, "followup1.event"))) %>%       
+    seize(resource="Fu1", amount=1) %>%                                                                     
+    timeout_from_attribute(key="Fu1.Time") %>%                                                              
+    release(resource="Fu1", amount=1) %>%
     log_("Patient has died during follow up") %>%
     timeout(10)%>%
     set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                       get_attribute(bsc.sim, "Tx1.Time"), 0, 10)) %>%
+    set_attribute(key="cost", value=function() func.cost(
+      get_attribute(bsc.sim, "Tx1.Cycles"),
+      get_attribute(bsc.sim, "Tx1.Time"),
+      get_attribute(bsc.sim, "Tx1.Complications"),
+      get_attribute(bsc.sim, "Tx2.Cycles"),
+      get_attribute(bsc.sim, "Tx2.Time"),
+      get_attribute(bsc.sim, "Tx2.Complications")
+    )) %>%
     set_attribute(key="Alive", value=0)
   ) %>%
          #Second line treatment
@@ -379,6 +525,14 @@ bsc.model <- trajectory()%>%
                     set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                       get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                       get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
+                    set_attribute(key="cost", value=function() func.cost(
+                      get_attribute(bsc.sim, "Tx1.Cycles"),
+                      get_attribute(bsc.sim, "Tx1.Time"),
+                      get_attribute(bsc.sim, "Tx1.Complications"),
+                      get_attribute(bsc.sim, "Tx2.Cycles"),
+                      get_attribute(bsc.sim, "Tx2.Time"),
+                      get_attribute(bsc.sim, "Tx2.Complications")
+                    )) %>%
                     set_attribute(key="Alive", value=0),                                                                   # update that the patient has died
                   
                   # Event 3: Major Complications
@@ -423,17 +577,231 @@ bsc.model <- trajectory()%>%
     set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                       get_attribute(bsc.sim, "Tx1.Time"), 
                                                                       get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
+    set_attribute(key="cost", value=function() func.cost(
+      get_attribute(bsc.sim, "Tx1.Cycles"),
+      get_attribute(bsc.sim, "Tx1.Time"),
+      get_attribute(bsc.sim, "Tx1.Complications"),
+      get_attribute(bsc.sim, "Tx2.Cycles"),
+      get_attribute(bsc.sim, "Tx2.Time"),
+      get_attribute(bsc.sim, "Tx2.Complications")
+    )) %>%
     release(resource="Fu2", amount=1)
   )
 
+
+## EXP Model
+
+exp.model <- trajectory()%>%
+  
+  # Initialization: do not forget to initialise these cycle attributes or the patients will all die.
+  set_attribute(key="Tx1.Cycles", value = 0) %>%
+  set_attribute(key="Tx2.Cycles", value = 0) %>%
+  set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
+  set_attribute(key="Tx2.Complications", value=0) %>%
+  set_attribute(key="position", value=0) %>%
+  set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
+  set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
+  set_attribute(key="qalys", value=0) %>%
+  set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
+  set_attribute(key="Cost", value=0) %>%
+  
+  # First-line treatment
+  set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                response = get_attribute(exp.sim, "response")) ) %>%                                                 # select the event to happen in this treatment cycle          
+  branch(option=function() get_attribute(exp.sim, "Tx1.Event"), continue=c(T, F, F, T, T),
+         
+         # Event 1: Full cycle
+         trajectory() %>%
+           set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(exp.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           set_attribute(key="position", value=1) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
+           rollback(amount=9, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
+         
+         # Event 2: Death
+         trajectory() %>%
+           set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(exp.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx1", amount=1) %>%
+           log_("Patient has died during first line treatment") %>% # leave first-line treatment
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
+           set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
+           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx1.Time"),
+                                                                             get_attribute(exp.sim, "Tx1.Complications"),
+                                                                             get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx2.Time"),
+                                                                             get_attribute(exp.sim, "Tx2.Complications"))),
+         
+         # Event 3: Major Complications
+         trajectory() %>%
+           set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(exp.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
+           set_attribute(key="position", value=2) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
+           rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+         
+         # Event 4: Minor Complications
+         trajectory() %>%
+           set_attribute(key="Tx1.Time", value=function() Tx1.time(get_attribute(exp.sim, "Tx1.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
+           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
+           set_attribute(key="position", value=3) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
+           rollback(amount=10, times=Inf), 
+         #Fifth trajectory: the patient has survived all treatment cycles and is out of first line treatment
+         trajectory()%>%
+           timeout(10)
+  )%>% 
+  
+  #First follow up period
+  set_attribute(key="followup1.event", value=function() followup1.event()) %>%
+  branch(option=function() get_attribute(exp.sim, "followup1.event"), continue=c(T, F),
+         
+         trajectory() %>% #First option: they survive the follow up
+           set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(exp.sim, "followup1.event"))) %>%       
+           seize(resource="Fu1", amount=1) %>%                                                                     
+           timeout_from_attribute(key="Fu1.Time") %>%                                                              
+           release(resource="Fu1", amount=1) %>%                                                                   
+           # rollback(amount=6, times=Inf),
+           set_attribute(key="position", value=4) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
+           timeout(10),
+         
+         trajectory() %>% #Second option: they die during the follow up
+           set_attribute(key="Fu1.Time", value=function() followup1.time(get_attribute(exp.sim, "followup1.event"))) %>%       
+           seize(resource="Fu1", amount=1) %>%                                                                     
+           timeout_from_attribute(key="Fu1.Time") %>%                                                              
+           release(resource="Fu1", amount=1) %>%
+           log_("Patient has died during follow up") %>%
+           timeout(10)%>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
+           set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
+           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx1.Time"),
+                                                                             get_attribute(exp.sim, "Tx1.Complications"),
+                                                                             get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx2.Time"),
+                                                                             get_attribute(exp.sim, "Tx2.Complications")))
+         
+  ) %>%
+  #Second line treatment
+  set_attribute(key="Tx2.Event", value=function() Tx2.Event.alt(cycles = get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                Tx1.cycles = get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                response = get_attribute(exp.sim, "response")))%>%                                                 # select the event to happen in this treatment cycle          
+  branch(option=function() get_attribute(exp.sim, "Tx2.Event"), continue=c(T, F, F, T, T), 
+         # Event 1: Full cycle
+         trajectory() %>%
+           set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(exp.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
+           set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+           set_attribute(key="position", value=5) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 
+                                                                             get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
+           rollback(amount=9, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
+         
+         # Event 2: Death
+         trajectory() %>%
+           set_attribute(key="Tx2.Time", value=function() Tx2.time(get_attribute(exp.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx2", amount=1) %>%
+           log_("Patient has died during second line treatment") %>%
+           set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 
+                                                                             get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
+           set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
+           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx1.Time"),
+                                                                             get_attribute(exp.sim, "Tx1.Complications"),
+                                                                             get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx2.Time"),
+                                                                             get_attribute(exp.sim, "Tx2.Complications"))),
+         
+         # Event 3: Major Complications
+         trajectory() %>%
+           set_attribute(key="Tx2.Time", value=function() Tx1.time(get_attribute(exp.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
+           set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+           set_attribute(keys="Tx2.Complications", value=2) %>%
+           set_attribute(key="position", value=6) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 
+                                                                             get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
+           rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
+         
+         # Event 4: Minor Complications
+         trajectory() %>%
+           set_attribute(key="Tx2.Time", value=function() Tx1.time(get_attribute(exp.sim, "Tx2.Event"))) %>%       # determine how long the cycle will last
+           seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
+           timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
+           release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
+           set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+           set_attribute(keys="Tx2.Complications", value = 1) %>%
+           set_attribute(key="position", value=7) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 
+                                                                             get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
+           rollback(amount=10, times=Inf),
+         #Fifth trajectory: the patient has survived all treatment cycles
+         trajectory()%>%
+           timeout(10)
+         
+  ) %>%
+  set_attribute(key="palliative.time", value=function() palliative.time()) %>%
+  branch(option=function() 1, continue=c(F),
+         trajectory() %>%
+           seize(resource="Fu2", amount=1) %>%
+           timeout_from_attribute(key="palliative.time") %>%
+           log_("Patient has survived the all treatment cycles") %>%
+           set_attribute(key="position", value=8) %>%
+           set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                             get_attribute(exp.sim, "Tx1.Time"), 
+                                                                             get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
+           release(resource="Fu2", amount=1) %>%
+           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx1.Time"),
+                                                                             get_attribute(exp.sim, "Tx1.Complications"),
+                                                                             get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                             get_attribute(exp.sim, "Tx2.Time"),
+                                                                             get_attribute(exp.sim, "Tx2.Complications")))
+         
+  )
+
+
 # Visualize to check whether the defined model structure is ok
 plot(bsc.model)
-  
+plot(exp.model)
+
 ## Section 5: Simulation ----
 
 # Simulation settings
 set.seed(5678);       # random number seed for reproducibility
-n.patients <- 100;    # number of patients to simulate 
+n.patients <- 10000;    # number of patients to simulate 
 mon.patients <- 5;    # level of monitoring (see add_generator)
 
 # Define simulation for the best standard care (bsc)
@@ -444,13 +812,29 @@ bsc.sim <- simmer() %>%
   add_resource(name="Fu2", capacity=Inf, mon=F) %>%
   add_generator(name_prefix="Patient", trajectory=bsc.model, distribution=at(rep(x=0, times=n.patients)), mon=mon.patients)
 
+# Define simulation for the experimental care (exp)
+exp.sim <- simmer() %>%
+  add_resource(name="Tx1", capacity=Inf, mon=F) %>%
+  add_resource(name="Tx2", capacity=Inf, mon=F) %>%
+  add_resource(name="Fu1", capacity=Inf, mon=F) %>%
+  add_resource(name="Fu2", capacity=Inf, mon=F) %>%
+  add_generator(name_prefix="Patient", trajectory=exp.model, distribution=at(rep(x=0, times=n.patients)), mon=mon.patients)
+
 # Run the BSC simulation
 bsc.sim %>% 
   run()
 
-# Get the outcomes for the monitored attributes
+# Run the EXP simulation
+exp.sim %>% 
+  run()
+
+# Get the outcomes for the monitored attributes for bsc
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
 View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
 
+# Get the outcomes for the monitored attributes for exp
+exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
+getSingleAttribute("Alive", exp.out);               # get patient-level outcomes for the attribute of interest
+View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "qalys"), exp.out))   # get outcomes for multiple outcomes at the same time
 
