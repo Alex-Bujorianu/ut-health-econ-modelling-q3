@@ -803,7 +803,7 @@ plot(exp.model)
 
 # Simulation settings
 set.seed(5678);       # random number seed for reproducibility
-n.patients <- 10000;    # number of patients to simulate 
+n.patients <- 100;    # number of patients to simulate 
 mon.patients <- 5;    # level of monitoring (see add_generator)
 
 # Define simulation for the best standard care (bsc)
@@ -833,10 +833,15 @@ exp.sim %>%
 # Get the outcomes for the monitored attributes for bsc
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "cost", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
+bsc_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "cost", "qalys"), bsc.out)
+View(bsc_attributes)
+#Save data to file
+write.csv(bsc_attributes, "Data/bsc-results-10000.csv")
 
 # Get the outcomes for the monitored attributes for exp
 exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", exp.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "cost", "qalys"), exp.out))   # get outcomes for multiple outcomes at the same time
-
+exp_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "cost", "qalys"), exp.out)
+View(exp_attributes)   # get outcomes for multiple outcomes at the same time
+#Save data to file
+write.csv(exp_attributes, "Data/exp-results-10000.csv")
