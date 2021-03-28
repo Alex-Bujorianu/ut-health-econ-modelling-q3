@@ -684,7 +684,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
-      set_attribute(key="Cost", value=0) %>%
+      set_attribute(key="cost", value=0) %>%
       
       # First-line treatment
       set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles"),
@@ -717,7 +717,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                                                                  get_attribute(exp.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
                set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+               set_attribute(key="cost", mod="+", value=function() func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                                get_attribute(exp.sim, "Tx1.Time"),
                                                                                get_attribute(exp.sim, "Tx1.Complications"),
                                                                                get_attribute(exp.sim, "Tx2.Cycles"),
@@ -783,7 +783,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                                                                  get_attribute(exp.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
                set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+               set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"),
                                                                                  get_attribute(exp.sim, "Tx1.Complications"),
                                                                                  get_attribute(exp.sim, "Tx2.Cycles"),
@@ -824,7 +824,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+               set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"),
                                                                                  get_attribute(exp.sim, "Tx1.Complications"),
                                                                                  get_attribute(exp.sim, "Tx2.Cycles"),
@@ -877,7 +877,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                release(resource="Fu2", amount=1) %>%
-               set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+               set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"),
                                                                                  get_attribute(exp.sim, "Tx1.Complications"),
                                                                                  get_attribute(exp.sim, "Tx2.Cycles"),
@@ -926,18 +926,23 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     # Get the outcomes for the monitored attributes for BSC
     bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
     getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-    View(getMultipleAttributes(c("Alive", "Tx1.Event", "followup1.event", "Tx2.Event", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
+    bsc_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
+                                              "followup1.event", "Tx2.Event", "cost", "qalys"), bsc.out)
+    View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Get the outcomes for the monitored attributes for EXP
     exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
     getSingleAttribute("Alive", exp.out);               # get patient-level outcomes for the attribute of interest
-    View(getMultipleAttributes(c("Alive", "Tx1.Event", "followup1.event", "Tx2.Event", "qalys"), exp.out))   # get outcomes for multiple outcomes at the same time
+    exp_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
+                                              "followup1.event", "Tx2.Event", "cost", "qalys"), exp.out)
+   View(exp_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Calculate average outcomes
-    costs.bsc <- "...write your code...";
-    costs.exp <- "...write your code...";
-    effect.bsc <- "...write your code...";
-    effect.exp <- "...write your code...";
+    costs.bsc <- mean(bsc_attributes[,5]);
+    View(costs.bsc);
+    costs.exp <- mean(exp_attributes[,5]);
+    effect.bsc <- mean(bsc_attributes[,6]);
+    effect.exp <- mean(exp_attributes[,6]);
     
     # Remove large object to save memory
     rm(bsc.model, exp.model, bsc.sim, exp.sim, bsc.out, exp.out);
@@ -960,4 +965,4 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
 
 ## Section 3: Run simulations
 
-psa.out <- runPSA(n.patients=100, n.runs=2)
+psa.out <- runPSA(n.patients=100, n.runs=1)
