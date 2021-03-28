@@ -157,9 +157,14 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     }
     
     #Utility of a patient depending on where they are in a cycle
-    func.utility <- function(position){
+    func.utility <- function(position,response){
       if  (position<5){ #in tx1
-        utility =0.55
+        if (response==1){ #if patient is responding
+          utility=func.tx1_u_r()
+        }
+        if (response==0){ #if patient is not responding
+          utility=func.tx1_u_nr()
+        }
         if (position==2){ #major complication
           utility	=utility -0.1
         }
@@ -170,8 +175,13 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
           utility =1.1*utility
         }
       }
-      else {
-        utility=0.5
+      else { #in tx2
+        if (response==1){ #if patient is responding
+          utility=func.tx2_u_r()
+        }
+        if (response==0){ #if patient is not responding
+          utility=func.tx2_u_nr()
+        }
         if (position==6){ #major complication
           utility	=utility -0.1
         }
@@ -188,19 +198,19 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     #This function does NOT return a total. It only returns the qalys during a specific cycle.
     #Therefore, it must be called up during each cycle and the result added to the patient's cumulative total.
     qaly=0
-    func.qaly <- function(position, Tx1.time, Tx2.time, followup1.time){
+    func.qaly <- function(position, response, Tx1.time, Tx2.time, followup1.time){
       if (position<4){
-        qaly=qaly+(func.utility(position) * Tx1.time /365)
+        qaly=qaly+(func.utility(position,response) * Tx1.time /365)
       }
       else if (position==4){
-        qaly=qaly+(func.utility(position)*followup1.time/365) #add the utility during followup, which is 10% higher
+        qaly=qaly+(func.utility(position,response)*followup1.time/365) #add the utility during followup, which is 10% higher
       }
       else if (position>4 && position<8){
-        qaly=qaly+(func.utility(position)*Tx2.time/365)
+        qaly=qaly+(func.utility(position,response)*Tx2.time/365)
       }
       #Patient has completed full cycle.
       else {
-        qaly=qaly+(func.utility(position)*palliative.time()/365)
+        qaly=qaly+(func.utility(position,response)*palliative.time()/365)
       }
       return(qaly)
     }
@@ -392,10 +402,12 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
         return(30);
       }
       else if (Tx1.Event == 2) {
-        return(15); #deaths tend to occur on day 15
+        time <- runif(n=1, min=2,max=28) #incorporating uncertainties of time to death
+        return(time)
       }
       else if (Tx1.Event == 3) {
-        return(6); #major comps tend to occur on day 6
+        time <- rgamma(n=1, shape=47.61169, rate=8.09397) #incorporating uncertainties of time to major complicatons
+        return(time)
       }
     }
     
@@ -405,14 +417,15 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       if (Tx2.Event == 1 || Tx2.Event == 4) {
         return(30);
       }
-      else if (Tx2.Event == 2) {
-        return(15); #deaths tend to occur on day 15
+      else if (Tx1.Event == 2) {
+        time <- runif(n=1, min=2,max=28) #incorporating uncertainties of time to death
+        return(time)
       }
-      else if (Tx2.Event == 3) {
-        return(6);
+      else if (Tx1.Event == 3) {
+        time <- rgamma(n=1, shape=47.61169, rate=8.09397) #incorporating uncertainties of time to major complicatons
+        return(time)
       }
-    }
-    
+    }    
     # Function for defining the time spent in Follow up 1 
     followup1.time <- function(followup1.event) {
       if (followup1.event == 1) {
@@ -446,6 +459,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="cost", value=0) %>% #keep track of each patient's cost  
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
+      
       # First-line treatment
       set_attribute(key="Tx1.Event", value=function() Tx1.Event(cycles = get_attribute(bsc.sim, "Tx1.Cycles"),
                                                                 condition = get_attribute(bsc.sim, "condition"),
@@ -460,7 +474,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
                set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
                set_attribute(key="position", value=1) %>%
-               set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+               set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"),
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
                rollback(amount=9, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
              
@@ -473,6 +488,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has died during first line treatment") %>% # leave first-line treatment
                set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
                #Calculate the costs when a patient dies
                set_attribute(key="cost", value=function() func.cost(
@@ -495,6 +511,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
                set_attribute(key="position", value=2) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
                rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
              
@@ -508,6 +525,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
                set_attribute(key="position", value=3) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
                rollback(amount=10, times=Inf), 
              #Fifth trajectory: the patient has survived all treatment cycles and is out of first line treatment
@@ -527,6 +545,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                # rollback(amount=6, times=Inf),
                set_attribute(key="position", value=4) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 10)) %>%
                timeout(10),
              
@@ -538,6 +557,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has died during follow up") %>%
                timeout(10)%>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 10)) %>%
                set_attribute(key="cost", value=function() func.cost(
                  get_attribute(bsc.sim, "Tx1.Cycles"),
@@ -563,6 +583,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
                set_attribute(key="position", value=5) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
                rollback(amount=9, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
@@ -576,6 +597,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has died during second line treatment") %>%
                set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
                set_attribute(key="cost", value=function() func.cost(
@@ -598,6 +620,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx2.Complications", value=2) %>%
                set_attribute(key="position", value=6) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
                rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
@@ -612,6 +635,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx2.Complications", value = 1) %>%
                set_attribute(key="position", value=7) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
                rollback(amount=10, times=Inf),
@@ -628,6 +652,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has survived the all treatment cycles") %>%
                set_attribute(key="position", value=8) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
                set_attribute(key="cost", value=function() func.cost(
@@ -673,6 +698,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
                set_attribute(key="position", value=1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
                rollback(amount=9, times=Inf),                                                                                             # go back for another cycle (Hint: look at plot trajectory)
              
@@ -685,6 +711,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has died during first line treatment") %>% # leave first-line treatment
                set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
                set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
                set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
@@ -704,6 +731,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
                set_attribute(key="position", value=2) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
                rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
              
@@ -717,6 +745,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
                set_attribute(key="position", value=3) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
                rollback(amount=10, times=Inf), 
              #Fifth trajectory: the patient has survived all treatment cycles and is out of first line treatment
@@ -736,6 +765,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                # rollback(amount=6, times=Inf),
                set_attribute(key="position", value=4) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
                timeout(10),
              
@@ -747,6 +777,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has died during follow up") %>%
                timeout(10)%>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
                set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
                set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
@@ -772,6 +803,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
                set_attribute(key="position", value=5) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                rollback(amount=9, times=Inf),                                                                       # go back for another cycle (Hint: look at plot trajectory)
@@ -785,6 +817,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has died during second line treatment") %>%
                set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
@@ -805,6 +838,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx2.Complications", value=2) %>%
                set_attribute(key="position", value=6) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                rollback(amount=10, times=Inf),                                                                          # go back for another cycle (Hint: look at plot trajectory)
@@ -819,6 +853,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(keys="Tx2.Complications", value = 1) %>%
                set_attribute(key="position", value=7) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                rollback(amount=10, times=Inf),
@@ -835,6 +870,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                log_("Patient has survived the all treatment cycles") %>%
                set_attribute(key="position", value=8) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
+                                                                                 get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                release(resource="Fu2", amount=1) %>%
@@ -890,9 +926,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     View(getMultipleAttributes(c("Alive", "Tx1.Event", "followup1.event", "Tx2.Event", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
     
     # Get the outcomes for the monitored attributes for EXP
-    bsc.exp <- get_mon_attributes(exp.sim);             # retrieve the monitor object
-    getSingleAttribute("Alive", bsc.exp);               # get patient-level outcomes for the attribute of interest
-    View(getMultipleAttributes(c("Alive", "Tx1.Event", "followup1.event", "Tx2.Event", "qalys"), bsc.exp))   # get outcomes for multiple outcomes at the same time
+    exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
+    getSingleAttribute("Alive", exp.out);               # get patient-level outcomes for the attribute of interest
+    View(getMultipleAttributes(c("Alive", "Tx1.Event", "followup1.event", "Tx2.Event", "qalys"), exp.out))   # get outcomes for multiple outcomes at the same time
     
     # Calculate average outcomes
     costs.bsc <- "...write your code...";
@@ -901,7 +937,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     effect.exp <- "...write your code...";
     
     # Remove large object to save memory
-    rm(bsc.model, exp.model, bsc.sim, exp.sim, bsc.out, bsc.exp);
+    rm(bsc.model, exp.model, bsc.sim, exp.sim, bsc.out, exp.out);
     
     # Return outcomes of interest, e.g. costs and effects
     return(c(costs.bsc=costs.bsc,
@@ -921,4 +957,4 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
 
 ## Section 3: Run simulations
 
-psa.out <- runPSA(n.patients=100, n.runs=2)
+psa.out <- runPSA(n.patients=1000, n.runs=2)

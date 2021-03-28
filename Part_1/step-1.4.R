@@ -1,4 +1,4 @@
-# Step 1.4 of assignment
+# Step 1.4 of assignment and some additional distribution fitting
 
 load("Data/trial_dataset.RData");
 
@@ -301,32 +301,66 @@ dist_lognorm_Tx1_u_r <- fitdist(Tx1_utility_responders, distr = "lnorm")
 #Check
 gofstat(dist_lognorm_Tx1_u_r, fitnames=c("Tx1 utility responders lognormal"))
 plot(dist_lognorm_Tx1_u_r)
+#function to determine utlity of patients depending on response
+func.tx1_u_r <- function() {
+  mean_tx1_u_r <- mean(Tx1_utility_responders); # mean utility of patients responding to treatment in tx1
+  sd_tx1_u_r <- sd(Tx1_utility_responders); # SD of utility of patients responding to treatment in tx1
+  location <- log(mean_tx1_u_r^2 / sqrt(sd_tx1_u_r^2 + mean_tx1_u_r^2))
+  shape <- sqrt(log(1 + (sd_tx1_u_r^2 / mean_tx1_u_r^2)))
+  tx1_u_r <- rlnorm(n=1, meanlog=location,sdlog=shape)
+  return(tx1_u_r)
+}
 
 hist(Tx1_utility_nonresponders)
 dist_lognorm_Tx1_u_nr <- fitdist(Tx1_utility_nonresponders, distr = "lnorm")
 #Check
 gofstat(dist_lognorm_Tx1_u_nr, fitnames=c("Tx1 utility nonresponders lognormal"))
 plot(dist_lognorm_Tx1_u_nr)
+#function to determine utlity of patients depending on response
+func.tx1_u_nr <- function() {
+  mean_tx1_u_nr <- mean(Tx1_utility_nonresponders); # mean utility of patients not responding to treatment in tx1
+  sd_tx1_u_nr <- sd(Tx1_utility_nonresponders); # SD of utility of patients not responding to treatment in tx1
+  location <- log(mean_tx1_u_nr^2 / sqrt(sd_tx1_u_nr^2 + mean_tx1_u_nr^2))
+  shape <- sqrt(log(1 + (sd_tx1_u_nr^2 / mean_tx1_u_nr^2)))
+  tx1_u_nr <- rlnorm(n=1, meanlog=location,sdlog=shape)
+  return(tx1_u_nr)
+}
 
 hist(Tx2_utility_responders)
 dist_lognorm_Tx2_u_r <- fitdist(Tx1_utility_responders, distr = "lnorm")
 #Check
 gofstat(dist_lognorm_Tx2_u_r, fitnames=c("Tx2 utility responders lognormal"))
 plot(dist_lognorm_Tx2_u_r)
+#function to determine utlity of patients depending on response
+func.tx2_u_r <- function() {
+  mean_tx2_u_r <- mean(Tx2_utility_responders); # mean utility of patients responding to treatment in tx2
+  sd_tx2_u_r <- sd(Tx2_utility_responders); # SD of utility of patients responding to treatment in tx2
+  location <- log(mean_tx2_u_r^2 / sqrt(sd_tx2_u_r^2 + mean_tx2_u_r^2))
+  shape <- sqrt(log(1 + (sd_tx2_u_r^2 / mean_tx2_u_r^2)))
+  tx2_u_r <- rlnorm(n=1, meanlog=location,sdlog=shape)
+  return(tx2_u_r)
+}
 
 hist(Tx2_utility_nonresponders)
 dist_lognorm_Tx2_u_nr <- fitdist(Tx2_utility_nonresponders, distr = "lnorm")
 #Check
 gofstat(dist_lognorm_Tx2_u_nr, fitnames=c("Tx2 utility nonresponders lognormal"))
 plot(dist_lognorm_Tx2_u_nr)
+#function to determine utlity of patients depending on response
+func.tx2_u_nr <- function() {
+  mean_tx2_u_nr <- mean(Tx2_utility_nonresponders); # mean utility of patients not responding to treatment in tx2
+  sd_tx2_u_nr <- sd(Tx2_utility_nonresponders); # SD of utility of patients not responding to treatment in tx2
+  location <- log(mean_tx2_u_nr^2 / sqrt(sd_tx2_u_nr^2 + mean_tx2_u_nr^2))
+  shape <- sqrt(log(1 + (sd_tx2_u_nr^2 / mean_tx2_u_nr^2)))
+  tx1_u_nr <- rlnorm(n=1, meanlog=location,sdlog=shape)
+  return(tx2_u_nr)
+}
+
 
 #2.7.6
-# Distributions for prob. of death in first follow up
-#first I tried it without stratification
+# Distribution for prob. of death in first follow up
 fu <- na.omit(data$FU1.Event)
 n_fu <- length(na.omit(data$FU1.Event)) #n persons 
 r_fu <- sum(fu==1) #1 is death
 beta_death_followup <- rbeta(1, r_fu, n_fu - r_fu)
-#We are not going to stratify
-
 
