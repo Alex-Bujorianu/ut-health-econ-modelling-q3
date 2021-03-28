@@ -605,7 +605,7 @@ exp.model <- trajectory()%>%
   set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
   set_attribute(key="qalys", value=0) %>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
-  set_attribute(key="Cost", value=0) %>%
+  set_attribute(key="cost", value=0) %>%
   
   # First-line treatment
   set_attribute(key="Tx1.Event", value=function() Tx1.Event.alt(cycles = get_attribute(exp.sim, "Tx1.Cycles"),
@@ -635,7 +635,7 @@ exp.model <- trajectory()%>%
            set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                              get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
            set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+           set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                              get_attribute(exp.sim, "Tx1.Time"),
                                                                              get_attribute(exp.sim, "Tx1.Complications"),
                                                                              get_attribute(exp.sim, "Tx2.Cycles"),
@@ -697,7 +697,7 @@ exp.model <- trajectory()%>%
            set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                              get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
            set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+           set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                              get_attribute(exp.sim, "Tx1.Time"),
                                                                              get_attribute(exp.sim, "Tx1.Complications"),
                                                                              get_attribute(exp.sim, "Tx2.Cycles"),
@@ -735,7 +735,7 @@ exp.model <- trajectory()%>%
                                                                              get_attribute(exp.sim, "Tx1.Time"), 
                                                                              get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
            set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+           set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                              get_attribute(exp.sim, "Tx1.Time"),
                                                                              get_attribute(exp.sim, "Tx1.Complications"),
                                                                              get_attribute(exp.sim, "Tx2.Cycles"),
@@ -785,7 +785,7 @@ exp.model <- trajectory()%>%
                                                                              get_attribute(exp.sim, "Tx1.Time"), 
                                                                              get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
            release(resource="Fu2", amount=1) %>%
-           set_attribute(key="Cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+           set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                              get_attribute(exp.sim, "Tx1.Time"),
                                                                              get_attribute(exp.sim, "Tx1.Complications"),
                                                                              get_attribute(exp.sim, "Tx2.Cycles"),
@@ -833,10 +833,10 @@ exp.sim %>%
 # Get the outcomes for the monitored attributes for bsc
 bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
+View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "cost", "qalys"), bsc.out))   # get outcomes for multiple outcomes at the same time
 
 # Get the outcomes for the monitored attributes for exp
 exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
 getSingleAttribute("Alive", exp.out);               # get patient-level outcomes for the attribute of interest
-View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "qalys"), exp.out))   # get outcomes for multiple outcomes at the same time
+View(getMultipleAttributes(c("Alive", "Tx1.Event", "Tx1.Complications", "Tx2.Event", "cost", "qalys"), exp.out))   # get outcomes for multiple outcomes at the same time
 
