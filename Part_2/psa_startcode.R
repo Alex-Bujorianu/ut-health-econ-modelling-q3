@@ -489,7 +489,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx1", amount=1) %>%
                log_("Patient has died during first line treatment") %>% # leave first-line treatment
-               set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
+               set_attribute(key = "Tx1.Cycles", mod = "+", value = 1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 0, 0)) %>%
@@ -511,7 +511,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
                set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
+               set_attribute(key="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
                set_attribute(key="position", value=2) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "response"),
@@ -524,8 +524,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
+               set_attribute(key = "Tx1.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx1.Complications", value=1) %>% #1 for minor complications
                set_attribute(key="position", value=3) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "response"),
@@ -583,7 +583,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>%
                set_attribute(key="position", value=5) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "response"),
@@ -598,8 +598,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                timeout_from_attribute(key="Tx2.Time") %>%                                                               # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%
                log_("Patient has died during second line treatment") %>%
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
-               set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
+               set_attribute(key = "qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "response"),
                                                                                  get_attribute(bsc.sim, "Tx1.Time"), 
                                                                                  get_attribute(bsc.sim, "Tx2.Time"), 10)) %>%
@@ -619,8 +619,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx2.Complications", value=2) %>%
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx2.Complications", value=2) %>%
                set_attribute(key="position", value=6) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "response"),
@@ -634,8 +634,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx2.Complications", value = 1) %>%
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx2.Complications", value = 1) %>%
                set_attribute(key="position", value=7) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
                                                                                  get_attribute(bsc.sim, "response"),
@@ -677,6 +677,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       # Initialization: do not forget to initialise these cycle attributes or the patients will all die.
       set_attribute(key="Tx1.Cycles", value = 0) %>%
       set_attribute(key="Tx2.Cycles", value = 0) %>%
+      #Do not forget to initialise the times!
+      set_attribute(key="Tx1.Time", value=0) %>%
+      set_attribute(key="Tx2.Time", value=0) %>%
       set_attribute(key="Tx1.Complications", value=0) %>% #0 for no complications, 1 for minor, 2 for major
       set_attribute(key="Tx2.Complications", value=0) %>%
       set_attribute(key="position", value=0) %>%
@@ -698,7 +701,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx1.Cycles", mod = "+", value = 1)%>%
                set_attribute(key="position", value=1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
@@ -712,7 +715,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx1", amount=1) %>%
                log_("Patient has died during first line treatment") %>% # leave first-line treatment
-               set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1) %>%
+               set_attribute(key = "Tx1.Cycles", mod = "+", value = 1) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
@@ -732,8 +735,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
+               set_attribute(key = "Tx1.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
                set_attribute(key="position", value=2) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
@@ -746,8 +749,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx1.Complications", value=1) %>% #1 for minor complications
+               set_attribute(key = "Tx1.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx1.Complications", value=1) %>% #1 for minor complications
                set_attribute(key="position", value=3) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
@@ -807,7 +810,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>%
                set_attribute(key="position", value=5) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
@@ -822,18 +825,18 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%
                log_("Patient has died during second line treatment") %>%
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>% # leave second-line treatment
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
-               set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-               set_attribute(key="cost", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+               set_attribute(key="cost", value=function() func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"),
                                                                                  get_attribute(exp.sim, "Tx1.Complications"),
                                                                                  get_attribute(exp.sim, "Tx2.Cycles"),
                                                                                  get_attribute(exp.sim, "Tx2.Time"),
-                                                                                 get_attribute(exp.sim, "Tx2.Complications"))),
+                                                                                 get_attribute(exp.sim, "Tx2.Complications"))) %>%
+             set_attribute(key="Alive", value=0),
              
              # Event 3: Major Complications
              trajectory() %>%
@@ -841,8 +844,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx2.Complications", value=2) %>%
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx2.Complications", value=2) %>%
                set_attribute(key="position", value=6) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
@@ -856,8 +859,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-               set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
-               set_attribute(keys="Tx2.Complications", value = 1) %>%
+               set_attribute(key = "Tx2.Cycles", mod = "+", value = 1)%>%
+               set_attribute(key = "Tx2.Complications", value = 1) %>%
                set_attribute(key="position", value=7) %>%
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
@@ -880,13 +883,13 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                                                                  get_attribute(exp.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
-               release(resource="Fu2", amount=1) %>%
                set_attribute(key="cost", value=function() func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
-                                                                                 get_attribute(exp.sim, "Tx1.Time"),
-                                                                                 get_attribute(exp.sim, "Tx1.Complications"),
-                                                                                 get_attribute(exp.sim, "Tx2.Cycles"),
-                                                                                 get_attribute(exp.sim, "Tx2.Time"),
-                                                                                 get_attribute(exp.sim, "Tx2.Complications")))
+                                                                         get_attribute(exp.sim, "Tx1.Time"),
+                                                                         get_attribute(exp.sim, "Tx1.Complications"),
+                                                                         get_attribute(exp.sim, "Tx2.Cycles"),
+                                                                         get_attribute(exp.sim, "Tx2.Time"),
+                                                                         get_attribute(exp.sim, "Tx2.Complications"))) %>%
+               release(resource="Fu2", amount=1)
              
       )
     
@@ -931,19 +934,20 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
     getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
     bsc_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
-                                              "followup1.event", "Tx2.Event", "cost", "qalys"), bsc.out)
+                                              "followup1.event", "Tx2.Event", "cost", "qalys", "Tx1.Cycles", "Tx2.Cycles", 
+                                              "Tx1.Complications", "Tx2.Complications", "Tx1.Time", "Tx2.Time"), bsc.out)
     View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Get the outcomes for the monitored attributes for EXP
     exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
     getSingleAttribute("Alive", exp.out);               # get patient-level outcomes for the attribute of interest
     exp_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
-                                              "followup1.event", "Tx2.Event", "cost", "qalys"), exp.out)
+                                              "followup1.event", "Tx2.Event", "cost", "qalys", "Tx1.Cycles", "Tx2.Cycles",
+                                              "Tx1.Complications", "Tx2.Complications", "Tx1.Time", "Tx2.Time"), exp.out)
    View(exp_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Calculate average outcomes
     costs.bsc <- mean(bsc_attributes[,5]);
-    View(costs.bsc);
     costs.exp <- mean(exp_attributes[,5]);
     effect.bsc <- mean(bsc_attributes[,6]);
     effect.exp <- mean(exp_attributes[,6]);

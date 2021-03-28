@@ -803,7 +803,7 @@ plot(exp.model)
 
 # Simulation settings
 set.seed(5678);       # random number seed for reproducibility
-n.patients <- 100;    # number of patients to simulate 
+n.patients <- 10000;    # number of patients to simulate 
 mon.patients <- 5;    # level of monitoring (see add_generator)
 
 # Define simulation for the best standard care (bsc)
