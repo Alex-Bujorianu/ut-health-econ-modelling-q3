@@ -28,7 +28,9 @@ source("Part_1/getMultipleAttributes.R", echo=T);
 # Load the dataset
 load("Data/trial_dataset.RData");
 
-##Important:Run file "Dx-Distribution-fitting" before the rest of this code
+#Load the test results from the distribution fitting file and step 1.4
+source("Part_2/Dx-distribution-fitting.R", echo=F);
+source("Part_1/step-1.4.R", echo=F);
 
 # Define parameters
 
