@@ -130,7 +130,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     }
     
     #Function to find total cost
-    func.cost<- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
+    func.cost <- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
       total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
       return(total_cost)
     }
@@ -153,7 +153,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     
     #Function to find costs for the exp model taking into account the costs of the novel diagnostic tests
     func.exp.costs <- function(Tx1.Cycles, Tx1.time, Tx1.Complications, Tx2.Cycles, Tx2.time, Tx2.Complications) {
-      total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications)+ func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
+      total_cost <- func.tx1cost(Tx1.Cycles, Tx1.time, Tx1.Complications) + func.tx2cost(Tx2.Cycles, Tx2.time, Tx2.Complications);
       #Note that we do tests at the baseline, so even with 0 cycles we will do at least 1 test
       total_cost <- total_cost + ((Tx1.Cycles+1) * (func.dx1cost()+func.dx2cost()+func.dx3cost())) + ((Tx2.Cycles+1) * (func.dx1cost()+func.dx2cost()+func.dx3cost()))
       return(total_cost)
@@ -716,13 +716,15 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 0)) %>%
-               set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-               set_attribute(key="cost", mod="+", value=function() func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
-                                                                               get_attribute(exp.sim, "Tx1.Time"),
-                                                                               get_attribute(exp.sim, "Tx1.Complications"),
-                                                                               get_attribute(exp.sim, "Tx2.Cycles"),
-                                                                               get_attribute(exp.sim, "Tx2.Time"),
-                                                                               get_attribute(exp.sim, "Tx2.Complications"))),
+               set_attribute(key="cost", value=function() func.exp.costs(
+                 get_attribute(exp.sim, "Tx1.Cycles"),
+                 get_attribute(exp.sim, "Tx1.Time"),
+                 get_attribute(exp.sim, "Tx1.Complications"),
+                 get_attribute(exp.sim, "Tx2.Cycles"),
+                 get_attribute(exp.sim, "Tx2.Time"),
+                 get_attribute(exp.sim, "Tx2.Complications")
+               )) %>%
+               set_attribute(key="Alive", value=0),
              
              # Event 3: Major Complications
              trajectory() %>%
@@ -782,13 +784,15 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
                                                                                  get_attribute(exp.sim, "response"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 0, 10)) %>%
-               set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-               set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
-                                                                                 get_attribute(exp.sim, "Tx1.Time"),
-                                                                                 get_attribute(exp.sim, "Tx1.Complications"),
-                                                                                 get_attribute(exp.sim, "Tx2.Cycles"),
-                                                                                 get_attribute(exp.sim, "Tx2.Time"),
-                                                                                 get_attribute(exp.sim, "Tx2.Complications")))
+               set_attribute(key="cost", value=function() func.exp.costs(
+                 get_attribute(exp.sim, "Tx1.Cycles"),
+                 get_attribute(exp.sim, "Tx1.Time"),
+                 get_attribute(exp.sim, "Tx1.Complications"),
+                 get_attribute(exp.sim, "Tx2.Cycles"),
+                 get_attribute(exp.sim, "Tx2.Time"),
+                 get_attribute(exp.sim, "Tx2.Complications")
+               )) %>%
+             set_attribute(key="Alive", value=0)
              
       ) %>%
       #Second line treatment
@@ -824,7 +828,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                set_attribute(key="Alive", value=0)%>%                                                                  # update that the patient has died
-               set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+               set_attribute(key="cost", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"),
                                                                                  get_attribute(exp.sim, "Tx1.Complications"),
                                                                                  get_attribute(exp.sim, "Tx2.Cycles"),
@@ -877,7 +881,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                                                                  get_attribute(exp.sim, "Tx1.Time"), 
                                                                                  get_attribute(exp.sim, "Tx2.Time"), 10)) %>%
                release(resource="Fu2", amount=1) %>%
-               set_attribute(key="cost", mod="+", value=function()func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
+               set_attribute(key="cost", value=function() func.exp.costs(get_attribute(exp.sim, "Tx1.Cycles"),
                                                                                  get_attribute(exp.sim, "Tx1.Time"),
                                                                                  get_attribute(exp.sim, "Tx1.Complications"),
                                                                                  get_attribute(exp.sim, "Tx2.Cycles"),
