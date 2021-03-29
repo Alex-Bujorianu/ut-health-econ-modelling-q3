@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```
-load("Data/psa_results.RData")
+{PSA-Analysis.R}
 ```
 
 ## Answers to Questions
