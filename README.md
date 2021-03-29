@@ -5,3 +5,4 @@ To run the model on your computer:
 
 1. Copy the URL and open it as a new project in RStudio (select the From Version Control option).
 2. That’s it! The file paths are all relative so there is no need to fiddle around with setwd. The data is exported to the Data directory in csv or .RData format.
+3. For the PSA data analysis, open the .Rmd file in RStudio and run each chunk of code to see the graphs/results.
