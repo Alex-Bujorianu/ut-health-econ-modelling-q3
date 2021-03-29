@@ -31,24 +31,25 @@ plot(plane, xlab="Incremental effects", ylab="Incremental costs")
 €20,000 per QALY gained, and one representing a willingness-to-pay threshold of €80,000 per
 QALY gained.**
 
+```{r PSA-Analysis.R, echo=FALSE}
+WTP_plot
+```
+**Determine how many of the PSA samples fall below these respective WTP thresholds.**
 
+```{r PSA-Analysis.R, echo=FALSE}
+percentage_below_20000
+percentage_below_80000
+```
+**Finally, vary the WTP from €0 to €200,000 per QALY, in steps of €1,000, and determine for each
+WTP value the fraction of samples (points) falling below that specific WTP. This fraction
+represents the probability that the intervention strategy has acceptable cost-effectiveness
+compared with the control strategy, given that specific WTP. Create a cost-effectiveness
+acceptability curve (CEAC) that visualizes this probability as a function of the WTP over this
+range. Also, provide correct labels for both axes.**
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r PSA-Analysis.R, echo=FALSE}
+plot(x=seq(0, 200000, length.out = 201), y=percentages_vector, xlab="Willingness to Pay Threshold",
+  ylab="Points below WTP curve", main="CEAC curve")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
