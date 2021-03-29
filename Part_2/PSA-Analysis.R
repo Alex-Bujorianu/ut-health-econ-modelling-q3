@@ -25,11 +25,17 @@ effects_vector <- vector()
 costs_vector <- vector()
 
 ICERs_vector <- vector()
+comparison_vector <- vector()
+comparison_vector_80000 <- vector()
 
 for (i in 1:length(psa.results$c.bsc)) {
   dif_effects <- e.exp[i] - e.bsc[i]
   dif_costs <- c.exp[i] - c.bsc[i]
+  comparison <- dif_costs < (dif_effects * 20000)
+  comparison_80000 <- dif_costs < (dif_effects * 80000)
   ICERs_vector <- c(ICERs_vector, (dif_costs / dif_effects))
+  comparison_vector <- c(comparison_vector, comparison)
+  comparison_vector_80000 <- c(comparison_vector_80000, comparison_80000)
   effects_vector <- c(effects_vector, dif_effects)
   costs_vector <- c(costs_vector, dif_costs)
 }
@@ -52,6 +58,12 @@ WTP_plot
 length <- length(ICERs_vector)
 percentage_below_20000 <- sum(ICERs_vector<20000) / length
 percentage_below_80000 <- sum(ICERs_vector<80000) / length
+
+# I think calculating individuals ICERs is incorrect.
+# Instead, let's compare the y value (cost) against x*WTP to see if it's lower.
+
+percentage_below_20000 <- sum(comparison_vector==TRUE) / length(comparison_vector)
+percentage_below_80000 <- sum(comparison_vector_80000==TRUE) / length(comparison_vector_80000)
 
 # This seems wrong. 
 # The south-east quadrant should have negative ICERs (you are saving money while gaining utility)
