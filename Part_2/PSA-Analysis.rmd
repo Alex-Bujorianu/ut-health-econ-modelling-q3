@@ -9,14 +9,27 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```
-{PSA-Analysis.R}
-```
-
 ## Answers to Questions
 
 **Determine the incremental cost-effectiveness ratio (ICER) of the intervention strategy compared
 with the control strategy.**
+
+``` {r PSA-Analysis.R, echo=FALSE}
+print(ICER)
+```
+
+As we can see, the ICER is about €28,000. This would be acceptable if society were willing to pay €80,000 per QALY but not if society were willing to pay only €20,000 per QALY.
+
+**Create an incremental cost-effectiveness plane and visualize the incremental effects (x-axis) and
+incremental costs (y-axis) of the intervention strategy compared with the control strategy.
+Provide a correct label for both axes.**
+
+```{r PSA-Analysis.R, echo=FALSE}
+plot(plane, xlab="Incremental effects", ylab="Incremental costs")
+```
+**Add two solid lines to this plane, one representing a willingness-to-pay (WTP) threshold of
+€20,000 per QALY gained, and one representing a willingness-to-pay threshold of €80,000 per
+QALY gained.**
 
 
 
