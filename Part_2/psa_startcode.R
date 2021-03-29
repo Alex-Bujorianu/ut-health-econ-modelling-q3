@@ -936,7 +936,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     bsc_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
                                               "followup1.event", "Tx2.Event", "cost", "qalys", "Tx1.Cycles", "Tx2.Cycles", 
                                               "Tx1.Complications", "Tx2.Complications", "Tx1.Time", "Tx2.Time"), bsc.out)
-    View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
+    #View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Get the outcomes for the monitored attributes for EXP
     exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
@@ -944,7 +944,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     exp_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
                                               "followup1.event", "Tx2.Event", "cost", "qalys", "Tx1.Cycles", "Tx2.Cycles",
                                               "Tx1.Complications", "Tx2.Complications", "Tx1.Time", "Tx2.Time"), exp.out)
-   View(exp_attributes)   # get outcomes for multiple outcomes at the same time
+   #View(exp_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Calculate average outcomes
     costs.bsc <- mean(bsc_attributes[,5]);
@@ -973,4 +973,4 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
 
 ## Section 3: Run simulations
 
-psa.out <- runPSA(n.patients=100, n.runs=1)
+psa.out <- runPSA(n.patients=100, n.runs=5)
