@@ -1,6 +1,7 @@
 # R Script to Analyse PSA Results Data
 
 library("ggplot2")
+library("rlist")
 
 load("Data/psa_results.RData")
 
@@ -24,18 +25,15 @@ c.bsc <- psa.results$c.bsc
 effects_vector <- vector()
 costs_vector <- vector()
 
-ICERs_vector <- vector()
-comparison_vector <- vector()
-comparison_vector_80000 <- vector()
+#Time for some real programming.
+
+list_of_costs_effects <- list()
 
 for (i in 1:length(psa.results$c.bsc)) {
   dif_effects <- e.exp[i] - e.bsc[i]
   dif_costs <- c.exp[i] - c.bsc[i]
-  comparison <- dif_costs < (dif_effects * 20000)
-  comparison_80000 <- dif_costs < (dif_effects * 80000)
-  ICERs_vector <- c(ICERs_vector, (dif_costs / dif_effects))
-  comparison_vector <- c(comparison_vector, comparison)
-  comparison_vector_80000 <- c(comparison_vector_80000, comparison_80000)
+  A <- c(dif_costs, dif_effects)
+  list_of_costs_effects <- list.append(list_of_costs_effects, A)
   effects_vector <- c(effects_vector, dif_effects)
   costs_vector <- c(costs_vector, dif_costs)
 }
@@ -55,15 +53,20 @@ WTP_plot <- ggplot(plane, aes(x=effects_vector, y=costs_vector)) +
 WTP_plot
         
 ##We have to determine how many fall below the threshold. We do this by calculating the individual ICERs.
-length <- length(ICERs_vector)
-percentage_below_20000 <- sum(ICERs_vector<20000) / length
-percentage_below_80000 <- sum(ICERs_vector<80000) / length
 
 # I think calculating individuals ICERs is incorrect.
 # Instead, let's compare the y value (cost) against x*WTP to see if it's lower.
-
-percentage_below_20000 <- sum(comparison_vector==TRUE) / length(comparison_vector)
-percentage_below_80000 <- sum(comparison_vector_80000==TRUE) / length(comparison_vector_80000)
+# They are indeed much more plausible.
+WTP_20K_vector <- vector()
+WTP_80K_vector <- vector()
+WTP_20K <- 20000
+WTP_80K <- 80000
+for (i in 1:length(list_of_costs_effects)) {
+  WTP_20K_vector <- c(WTP_20K_vector, list_of_costs_effects[[i]][1] < list_of_costs_effects[[i]][2]*WTP_20K)
+  WTP_80K_vector <- c(WTP_80K_vector, list_of_costs_effects[[i]][1] < list_of_costs_effects[[i]][2]*WTP_80K)
+}
+percentage_below_20000 <- sum(WTP_20K_vector==TRUE) / length(WTP_20K_vector)
+percentage_below_80000 <- sum(WTP_80K_vector==TRUE) / length(WTP_80K_vector)
 
 # This seems wrong. 
 # The south-east quadrant should have negative ICERs (you are saving money while gaining utility)
@@ -74,7 +77,11 @@ percentage_below_80000 <- sum(comparison_vector_80000==TRUE) / length(comparison
 # Let's calculate the fraction for 200 WTPs: from 0 to 200,000€
 percentages_vector <- vector()
 for (i in seq(0, 200000, length.out = 201)) {
-  percentage <- sum(ICERs_vector<i) / length
+  temp_vector <- vector()
+  for (j in 1:length(list_of_costs_effects)) {
+    temp_vector <- c(temp_vector, list_of_costs_effects[[j]][1] < list_of_costs_effects[[j]][2]*i)
+  }
+  percentage <- sum(temp_vector==TRUE) / length(temp_vector)
   percentages_vector <- c(percentages_vector, percentage)
 }
 

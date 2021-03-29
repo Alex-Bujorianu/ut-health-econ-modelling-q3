@@ -54,5 +54,5 @@ plot(x=seq(0, 200000, length.out = 201), y=percentages_vector, xlab="Willingness
 
 **What is your conclusion based on this CEAC?**
 
-Most of the points (representing a simulation run) will fall below a WTP threshold of €50,000. Beyond that the curve flattens off. For a more plausible WTP of €20,000 (used in the Netherlands) about 60% of the values will be below it.
+About 60% of the points (representing a simulation run) will fall below a WTP threshold of €50,000. Beyond that the curve flattens off. For a more plausible WTP of €20,000 (used in the Netherlands) only 40% of the values will be below it. In conclusion, this intervention strategy is not cost effective at any reasonable WTP.
 
