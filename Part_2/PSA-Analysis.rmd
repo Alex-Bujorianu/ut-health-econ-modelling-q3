@@ -12,9 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Answers to Questions
 
 **Determine the incremental cost-effectiveness ratio (ICER) of the intervention strategy compared
-with the control strategy.**
+with the control stategy.**
 
-``` {r PSA-Analysis.R, echo=FALSE}
+``` {r "Part_2/PSA-Analysis.R", echo=FALSE}
+load("Part_2/PSA-environment.RData")
 print(ICER)
 ```
 
@@ -24,19 +25,19 @@ As we can see, the ICER is about €28,000. This would be acceptable if society 
 incremental costs (y-axis) of the intervention strategy compared with the control strategy.
 Provide a correct label for both axes.**
 
-```{r PSA-Analysis.R, echo=FALSE}
+```{r}
 plot(plane, xlab="Incremental effects", ylab="Incremental costs")
 ```
 **Add two solid lines to this plane, one representing a willingness-to-pay (WTP) threshold of
 €20,000 per QALY gained, and one representing a willingness-to-pay threshold of €80,000 per
 QALY gained.**
 
-```{r PSA-Analysis.R, echo=FALSE}
+```{r}
 WTP_plot
 ```
 **Determine how many of the PSA samples fall below these respective WTP thresholds.**
 
-```{r PSA-Analysis.R, echo=FALSE}
+```{r}
 percentage_below_20000
 percentage_below_80000
 ```
@@ -47,7 +48,7 @@ compared with the control strategy, given that specific WTP. Create a cost-effec
 acceptability curve (CEAC) that visualizes this probability as a function of the WTP over this
 range. Also, provide correct labels for both axes.**
 
-```{r PSA-Analysis.R, echo=FALSE}
+```{r}
 plot(x=seq(0, 200000, length.out = 201), y=percentages_vector, xlab="Willingness to Pay Threshold",
   ylab="Points below WTP curve", main="CEAC curve")
 ```
