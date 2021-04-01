@@ -119,19 +119,29 @@ age <- data$Age #age is numerical and continuous
 C2_transformed_events <- data$Tx1.C2.Event
 #We need to transform this data into alive or dead coded 0 or 1.
 for (i in 1:length(C2_transformed_events)) {
-  #0 = no comps, 2 = major, 3 = minor, but they are alive
-  if (!is.na(C2_transformed_events[i]) && (C2_transformed_events[i] == 0 || C2_transformed_events[i] == 2 || C2_transformed_events[i] == 3)) {
-    C2_transformed_events[i] <- 1
+  #If the value is 1, the patient died died in Tx1.C2
+  #I have to test for NA values to make R evaluate the if condition properly
+  if (!is.na(C2_transformed_events[i]) && (C2_transformed_events[i] == 1)) {
+    C2_transformed_events[i] <- 0
+  }
+  #If the value is NA, the patient either died in cycle 1 OR had a major complication, and stopped treatment.
+  #Check if they died in C1 and assign death if that is the case
+  else if (is.na(C2_transformed_events[i]) && data$Tx1.C1.Event[i]==1) {
+    C2_transformed_events[i] <- 0
   }
   else {
-    C2_transformed_events[i] <- 0
+    C2_transformed_events[i] <- 1
   }
 }
 
 logreg_death <- glm(C2_transformed_events ~ male + age, family = binomial)
 summary(logreg_death)
 
-#Age is not significant but gender is. Men are more likely to die from colon cancer.
+#Age is not significant. Male gender seems to have stronger significance, 
+#but still it does not reach significance at the alpha = 0.10 level.
+#We had 538 observations BUT only 31 people died. 
+#It's hard to get statistical power for an unlikely event, 
+#e.g. vaccine complications are hard to prove statistically: look at Guillian-Barre for the bird flu vaccine.
 
 #We want to find time-to-death and time-to-major-complication for Tx1 and Tx2 based on C1 + C2
 
