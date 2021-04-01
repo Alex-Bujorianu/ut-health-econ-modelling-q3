@@ -934,17 +934,20 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     bsc.out <- get_mon_attributes(bsc.sim);             # retrieve the monitor object
     getSingleAttribute("Alive", bsc.out);               # get patient-level outcomes for the attribute of interest
     bsc_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
-                                              "followup1.event", "Tx2.Event", "cost", "qalys", "Tx1.Cycles", "Tx2.Cycles", 
+                                              "followup1.event", "Tx2.Event", 
+                                              "cost", "qalys", 
+                                              "Tx1.Cycles", "Tx2.Cycles", 
                                               "Tx1.Complications", "Tx2.Complications", "Tx1.Time", "Tx2.Time"), bsc.out)
-    #View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
+    View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Get the outcomes for the monitored attributes for EXP
     exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
     getSingleAttribute("Alive", exp.out);               # get patient-level outcomes for the attribute of interest
     exp_attributes <- getMultipleAttributes(c("Alive", "Tx1.Event", 
-                                              "followup1.event", "Tx2.Event", "cost", "qalys", "Tx1.Cycles", "Tx2.Cycles",
+                                              "followup1.event", "Tx2.Event", 
+                                              "cost", "qalys", 
+                                              "Tx1.Cycles", "Tx2.Cycles",
                                               "Tx1.Complications", "Tx2.Complications", "Tx1.Time", "Tx2.Time"), exp.out)
-   #View(exp_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Calculate average outcomes
     costs.bsc <- mean(bsc_attributes$cost);
@@ -952,19 +955,20 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     effect.bsc <- mean(bsc_attributes$qalys);
     effect.exp <- mean(exp_attributes$qalys);
     
-    #Append it to a data frame
-    # costs.bsc.vector <- vector()
-    # costs.exp.vector <- vector()
-    # effects.bsc.vector <- vector()
-    # effects.exp.vector <- vector()
-    # costs.bsc.vector <- append(costs.bsc.vector, values=costs.bsc)
-    # costs.exp.vector <- append(costs.exp.vector, values=costs.exp)
-    # effects.bsc.vector <- append(effects.bsc.vector, values=effect.exp)
-    # effects.exp.vector <- append(effects.exp.vector, values=effect.exp)
-    # our_results <- data.frame(costs.bsc.vector, costs.exp.vector,
-    #                           effects.bsc.vector, effects.exp.vector)
-    # View(our_results)
-    # save(our_results, file = "Data/our_psa_results.RData")
+   #Also calculate some death statistics, major complications
+    percentage_death_Tx2_bsc <- (sum(na.omit(bsc_attributes$Tx2.Event==2)) + 
+      sum(is.na(bsc_attributes$Tx2.Event)==TRUE)) /
+      length(bsc_attributes$Tx1.Event)
+    percentage_death_Tx2_exp <- (sum(na.omit(exp_attributes$Tx2.Event==2)) + 
+                                   sum(is.na(exp_attributes$Tx2.Event)==TRUE)) /
+      length(exp_attributes$Tx1.Event)
+    
+    percentage_major_comp_bsc <- (sum(na.omit(bsc_attributes$Tx2.Complications==2)) + 
+                                    sum(bsc_attributes$Tx1.Complications==2)) / 
+                                    length(bsc_attributes$Tx1.Complications==2)
+    percentage_major_comp_exp <- (sum(na.omit(exp_attributes$Tx2.Complications==2)) + 
+                                    sum(exp_attributes$Tx1.Complications==2)) / 
+                                    length(exp_attributes$Tx1.Complications==2)
     
     # Remove large object to save memory
     rm(bsc.model, exp.model, bsc.sim, exp.sim, bsc.out, exp.out);
@@ -973,7 +977,11 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
     return(c(costs.bsc=costs.bsc,
              costs.exp=costs.exp,
              effect.bsc=effect.bsc,
-             effect.exp=effect.exp));
+             effect.exp=effect.exp,
+           percentage_death_Tx2_bsc=percentage_death_Tx2_bsc,
+           percentage_death_Tx2_exp=percentage_death_Tx2_exp,
+           percentage_major_comp_bsc=percentage_major_comp_bsc,
+           percentage_major_comp_exp=percentage_death_Tx2_exp));
     
   })
   
