@@ -947,10 +947,24 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
    #View(exp_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Calculate average outcomes
-    costs.bsc <- mean(bsc_attributes[,5]);
-    costs.exp <- mean(exp_attributes[,5]);
-    effect.bsc <- mean(bsc_attributes[,6]);
-    effect.exp <- mean(exp_attributes[,6]);
+    costs.bsc <- mean(bsc_attributes$cost);
+    costs.exp <- mean(exp_attributes$cost);
+    effect.bsc <- mean(bsc_attributes$qalys);
+    effect.exp <- mean(exp_attributes$qalys);
+    
+    #Append it to a data frame
+    # costs.bsc.vector <- vector()
+    # costs.exp.vector <- vector()
+    # effects.bsc.vector <- vector()
+    # effects.exp.vector <- vector()
+    # costs.bsc.vector <- append(costs.bsc.vector, values=costs.bsc)
+    # costs.exp.vector <- append(costs.exp.vector, values=costs.exp)
+    # effects.bsc.vector <- append(effects.bsc.vector, values=effect.exp)
+    # effects.exp.vector <- append(effects.exp.vector, values=effect.exp)
+    # our_results <- data.frame(costs.bsc.vector, costs.exp.vector,
+    #                           effects.bsc.vector, effects.exp.vector)
+    # View(our_results)
+    # save(our_results, file = "Data/our_psa_results.RData")
     
     # Remove large object to save memory
     rm(bsc.model, exp.model, bsc.sim, exp.sim, bsc.out, exp.out);
@@ -964,7 +978,9 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
   })
   
   ## Return results ====
-  
+  View(results)
+  #Results have to be saved BEFORE the return statement otherwise it won't work
+  save(results, file = "Data/our_PSA_results.RData")
   return(results)
   
 } # funtion runPSA
