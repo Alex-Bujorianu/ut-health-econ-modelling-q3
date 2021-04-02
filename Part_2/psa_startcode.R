@@ -41,7 +41,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                       "beta_death_followup", "func.tx1_u_r", "func.tx1_u_nr", 
                       "func.tx2_u_r", "func.tx2_u_nr","Tx1_utility_responders",
                       "Tx1_utility_nonresponders","Tx2_utility_responders",
-                      "Tx2_utility_nonresponders", "mean_male_ages", "sd_male_ages"));
+                      "Tx2_utility_nonresponders", "mean_male_ages", "sd_male_ages",
+                      "dist_weibull_female"));
   
   # Multi-threaded/parallel simulations
   results <- parSapply(cl, 1:n.runs, function(run) {
@@ -83,7 +84,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       return(age)
       }
       else {
-        age <- rweibull(1, )
+        age <- rweibull(1, shape = dist_weibull_female$estimate[1], scale = dist_weibull_female$estimate[2])
         return(age)
       }
     }
@@ -466,6 +467,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="position", value=0) %>%
       set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
       set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
+      set_attribute(key="sex", value=function() func.sex()) %>%
+      set_attribute(key="age", value=function() func.age(get_attribute(bsc.sim, "sex"))) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="cost", value=0) %>% #keep track of each patient's cost  
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
@@ -692,6 +695,8 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       set_attribute(key="position", value=0) %>%
       set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
       set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
+      set_attribute(key="sex", value=function() func.sex()) %>%
+      set_attribute(key="age", value=function() func.age(get_attribute(exp.sim, "sex"))) %>%
       set_attribute(key="qalys", value=0) %>%
       set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
       set_attribute(key="cost", value=0) %>%

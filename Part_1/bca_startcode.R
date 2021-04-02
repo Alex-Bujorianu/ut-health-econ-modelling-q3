@@ -46,13 +46,20 @@ func.condition <- function() {
   return(condition)
 }
 
-func.age <- function() {
-  mean_age <- 60; # mean age of patients is 60 years
-  sd_age <- sd(data$Age); # SD of patients
-  location <- log(mean_age^2 / sqrt(sd_age^2 + mean_age^2))
-  shape <- sqrt(log(1 + (sd_age^2 / mean_age^2)))
-  age <- rlnorm(n=1, meanlog=location,sdlog=shape)
-  return(age)
+func.age <- function(sex) {
+  #Male patients have lognorm
+  if (sex==1) {
+    mean_age <- mean_male_ages; # mean age of male patients is about 53
+    sd_age <- sd_male_ages; # SD of male patients
+    location <- log(mean_age^2 / sqrt(sd_age^2 + mean_age^2))
+    shape <- sqrt(log(1 + (sd_age^2 / mean_age^2)))
+    age <- rlnorm(n=1, meanlog=location,sdlog=shape)
+    return(age)
+  }
+  else {
+    age <- rweibull(1, shape = dist_weibull_female$estimate[1], scale = dist_weibull_female$estimate[2])
+    return(age)
+  }
 }
 
 #Baseline function for response. About 45% of patients are responders.
@@ -397,6 +404,8 @@ bsc.model <- trajectory()%>%
   set_attribute(key="position", value=0) %>%
   set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
   set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
+  set_attribute(key="sex", value=function() func.sex()) %>%
+  set_attribute(key="age", value=function() func.age(get_attribute(bsc.sim, "sex"))) %>%
   set_attribute(key="qalys", value=0) %>%
   set_attribute(key="cost", value=0) %>% #keep track of each patient's cost
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
@@ -608,6 +617,8 @@ exp.model <- trajectory()%>%
   set_attribute(key="position", value=0) %>%
   set_attribute(key="condition", mod="+", value=function() func.condition()) %>%
   set_attribute(key="response", mod="+", value=function() func.tx1.response()) %>%
+  set_attribute(key="sex", value=function() func.sex()) %>%
+  set_attribute(key="age", value=function() func.age(get_attribute(exp.sim, "sex"))) %>%
   set_attribute(key="qalys", value=0) %>%
   set_attribute(key="Alive", value=1) %>%                                                                          # define an attribute to check whether the patient is alive
   set_attribute(key="cost", value=0) %>%
