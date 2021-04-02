@@ -938,7 +938,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                                               "cost", "qalys", 
                                               "Tx1.Cycles", "Tx2.Cycles", 
                                               "Tx1.Complications", "Tx2.Complications", "Tx1.Time", "Tx2.Time"), bsc.out)
-    View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
+   # View(bsc_attributes)   # get outcomes for multiple outcomes at the same time
     
     # Get the outcomes for the monitored attributes for EXP
     exp.out <- get_mon_attributes(exp.sim);             # retrieve the monitor object
@@ -986,7 +986,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
   })
   
   ## Return results ====
-  View(results)
+  #View(results)
   #Results have to be saved BEFORE the return statement otherwise it won't work
   save(results, file = "Data/our_PSA_results.RData")
   return(results)
