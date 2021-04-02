@@ -1009,4 +1009,4 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
 
 ## Section 3: Run simulations
 
-psa.out <- runPSA(n.patients=100, n.runs=5)
+psa.out <- runPSA(n.patients=1000, n.runs=100)
