@@ -21,6 +21,8 @@ for (i in 1:length(data$Age)) {
 #Start with log normal as that seems like the best candidate. Age cannot be negative.
 
 hist(male_ages)
+mean_male_ages <- mean(male_ages)
+sd_male_ages <- sd(male_ages)
 dist_lognorm_male <- fitdist(male_ages, distr = "lnorm")
 hist(female_ages)
 dist_lognorm_female <- fitdist(female_ages, distr= "lnorm")

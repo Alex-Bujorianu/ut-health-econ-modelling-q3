@@ -41,7 +41,7 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
                       "beta_death_followup", "func.tx1_u_r", "func.tx1_u_nr", 
                       "func.tx2_u_r", "func.tx2_u_nr","Tx1_utility_responders",
                       "Tx1_utility_nonresponders","Tx2_utility_responders",
-                      "Tx2_utility_nonresponders"));
+                      "Tx2_utility_nonresponders", "mean_male_ages", "sd_male_ages"));
   
   # Multi-threaded/parallel simulations
   results <- parSapply(cl, 1:n.runs, function(run) {
@@ -72,13 +72,20 @@ runPSA <- function(n.patients, n.runs, free.cores=1, seed=1234) {
       return(condition)
     }
     
-    func.age <- function() {
-      mean_age <- 60; # mean age of patients is 60 years
-      sd_age <- sd(data$Age); # SD of patients
+    func.age <- function(sex) {
+      #Male patients have lognorm
+      if (sex==1) {
+      mean_age <- mean_male_ages; # mean age of male patients is about 53
+      sd_age <- sd_male_ages; # SD of male patients
       location <- log(mean_age^2 / sqrt(sd_age^2 + mean_age^2))
       shape <- sqrt(log(1 + (sd_age^2 / mean_age^2)))
       age <- rlnorm(n=1, meanlog=location,sdlog=shape)
       return(age)
+      }
+      else {
+        age <- rweibull(1, )
+        return(age)
+      }
     }
     #Baseline function for response. About 45% of patients are responders.
     func.tx1.response <- function() {

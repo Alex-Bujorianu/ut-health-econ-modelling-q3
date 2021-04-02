@@ -330,7 +330,7 @@ Tx2.Event.alt <- function(cycles, Tx1.cycles, response) {
 # Function for determining the event to happen in Follow up 1
 followup1.event <- function() {
   #1: patient lives; 2: patient dies
-  prob_death <- ifelse(runif(1) < 0.05, 2, 1);
+  prob_death <- ifelse(runif(1) < beta_death_followup, 2, 1);
   return(prob_death)
 }
 
@@ -343,10 +343,12 @@ Tx1.time <- function(Tx1.Event) {
   return(30);
   }
   else if (Tx1.Event == 2) {
-    return(15); #deaths tend to occur on day 15
+    time <- runif(n=1, min=2,max=28) #incorporating uncertainties of time to death
+    return(time)
   }
   else if (Tx1.Event == 3) {
-    return(6); #major comps tend to occur on day 6
+    time <- rgamma(n=1, shape=47.61169, rate=8.09397) #incorporating uncertainties of time to major complicatons
+    return(time)
   }
 }
 
