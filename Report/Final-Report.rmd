@@ -5,6 +5,7 @@ date: "01/04/2021"
 output:
   html_document:
     df_print: paged
+  word_document: default
   pdf_document:
     fig_caption: yes
 ---
@@ -22,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### By Group 4: Alex Bujorianu (s) & Rusheel Mehra (s2344211)
 =======
 ```{r}
-load("Part_2/PSA-sim-environment.RData")
+load("../Part_2/PSA-sim-environment.RData")
 ```
 
 
@@ -34,7 +35,7 @@ We begin the process by building a simple simulation model of the best standard 
 
 ```{r}
 getwd()
-knitr::include_graphics("Report/clinical-pathway.png", error = FALSE)
+knitr::include_graphics("clinical-pathway.png", error = FALSE)
 ```
 
 First, we modeled the current treatment strategy as the control strategy.
