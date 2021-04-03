@@ -2,14 +2,36 @@
 title: "Simulation Final Report"
 author: "Alex Bujorianu & Rusheel Mehra"
 date: "01/04/2021"
-output: html_document
+output: 
+  pdf_document: 
+    fig_caption: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<!-- Front Page -->
+
+# Final Report for Health Economic modeling & Analysis in R
+
+## Course:Advanced Simulation for Health Economic Analysis
+
+### By Group 4: Alex Bujorianu (s) & Rusheel Mehra (s2344211)
+
 # Process Description & DES Design
+
+"Describe and motivate the choices you made during data analysis steps, design of the DES model, the simulation results, and the interpretation of these results."
+
+We begin the process by building a simple simulation model of the best standard care. The best standard care (BSC) is the clinical pathway as studied in the clinical trial as seen in figure 1. After diagnosis, the patient enters the first line of treatment, henceforth referred to as Tx1. In Tx1, the patient has to undergo 5 treatment cycles. The patient can follow 5 trajectories within this line of treatment. The first is when the patient has no complications and completes a full cycle. In this event the patient proceeds to the next cycle. The second trajectory is when a patient dies during a cycle. In such an event, the patient exits the system. The third trajectory is when a patient has a major complication. In this event, the patient exits Tx1 but continues into the first follow up and then through the rest of the pathway 
+
+![Clinical Pathway](Clinical Pathway.png) 
+
+First, we modeled the current treatment strategy as the control strategy.
+
+The base-case analysis (BCA) does not consider uncertainty in the model parameters, though it may reflect patient-level variation in models (i.e. stochastic uncertainty or first-order uncertainty).
+
+The probabilistic sensitivity analysis (PSA) also accounts for parameter uncertainty (i.e., second-order uncertainty).
 
 # Cost-effectiveness Estimation of the Novel Diagnostic Tests
 
