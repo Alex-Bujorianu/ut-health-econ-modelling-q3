@@ -2,8 +2,10 @@
 title: "Simulation Final Report"
 author: "Alex Bujorianu & Rusheel Mehra"
 date: "01/04/2021"
-output: 
-  pdf_document: 
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
     fig_caption: yes
 ---
 
@@ -11,7 +13,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-<<<<<<< HEAD
 <!-- Front Page -->
 
 # Final Report for Health Economic modeling & Analysis in R
@@ -23,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 load("Part_2/PSA-sim-environment.RData")
 ```
->>>>>>> 74ad191d44897a99fca73d5ca1520578351ee8f8
+
 
 # Process Description & DES Design
 
@@ -31,7 +32,10 @@ load("Part_2/PSA-sim-environment.RData")
 
 We begin the process by building a simple simulation model of the best standard care. The best standard care (BSC) is the clinical pathway as studied in the clinical trial as seen in figure 1. After diagnosis, the patient enters the first line of treatment, henceforth referred to as Tx1. In Tx1, the patient has to undergo 5 treatment cycles. The patient can follow 5 trajectories within this line of treatment. The first is when the patient has no complications and completes a full cycle. In this event the patient proceeds to the next cycle. The second trajectory is when a patient dies during a cycle. In such an event, the patient exits the system. The third trajectory is when a patient has a major complication. In this event, the patient exits Tx1 but continues into the first follow up and then through the rest of the pathway 
 
-![Clinical Pathway](Clinical Pathway.png) 
+```{r}
+getwd()
+knitr::include_graphics("Report/clinical-pathway.png", error = FALSE)
+```
 
 First, we modeled the current treatment strategy as the control strategy.
 
