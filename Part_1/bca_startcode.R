@@ -453,7 +453,7 @@ bsc.model <- trajectory()%>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           set_attribute(keys = "Tx1.Cycles", value = 5)%>%
            set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
            set_attribute(key="position", value=2) %>%
            set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
@@ -554,7 +554,7 @@ bsc.model <- trajectory()%>%
                     seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
                     timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
                     release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-                    set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+                    set_attribute(keys = "Tx2.Cycles", value = 5)%>%
                     set_attribute(keys="Tx2.Complications", value=2) %>%
                     set_attribute(key="position", value=6) %>%
                     set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(bsc.sim, "position"), 
@@ -664,7 +664,7 @@ exp.model <- trajectory()%>%
            seize(resource="Tx1", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx1.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx1", amount=1) %>%                                                                   # leave first-line treatment
-           set_attribute(keys = "Tx1.Cycles", mod = "+", value = 1)%>%
+           set_attribute(keys = "Tx1.Cycles", value = 5)%>%
            set_attribute(keys="Tx1.Complications", value=2) %>% #Now we know the patient had a major comp in tx1
            set_attribute(key="position", value=2) %>%
            set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
@@ -764,7 +764,7 @@ exp.model <- trajectory()%>%
            seize(resource="Tx2", amount=1) %>%                                                                     # occupy a place in first-line treatment
            timeout_from_attribute(key="Tx2.Time") %>%                                                              # stay in first-line treatment for the determined time
            release(resource="Tx2", amount=1) %>%                                                                   # leave first-line treatment
-           set_attribute(keys = "Tx2.Cycles", mod = "+", value = 1)%>%
+           set_attribute(keys = "Tx2.Cycles", value = 5)%>%
            set_attribute(keys="Tx2.Complications", value=2) %>%
            set_attribute(key="position", value=6) %>%
            set_attribute(key="qalys",  mod = "+", value=function() func.qaly(get_attribute(exp.sim, "position"), 
