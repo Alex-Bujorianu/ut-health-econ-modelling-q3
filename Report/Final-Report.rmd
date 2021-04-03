@@ -11,6 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<<<<<<< HEAD
 <!-- Front Page -->
 
 # Final Report for Health Economic modeling & Analysis in R
@@ -18,6 +19,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Course:Advanced Simulation for Health Economic Analysis
 
 ### By Group 4: Alex Bujorianu (s) & Rusheel Mehra (s2344211)
+=======
+```{r}
+load("Part_2/PSA-sim-environment.RData")
+```
+>>>>>>> 74ad191d44897a99fca73d5ca1520578351ee8f8
 
 # Process Description & DES Design
 
@@ -41,4 +47,75 @@ The probabilistic sensitivity analysis (PSA) also accounts for parameter uncerta
 
 # Feedback received
 
+We will go through the feedback received in a line-by-line fashion and describe how we changed our code (or chose not to change it) based on the feedback.
+
+> To introduce the reader to the code, it is a good suggestion to give the names of the sections that can be found in the further part of the code and add more pseudo-code. If you use different files for the different parts (e.g. data analysis, functions), it might help to add some code that describes what the file contains and where it is used for. Now some functions are provided in the main PSA code, and others are in a separate file. It would increase clarity and transparency.
+
+We agreed with this and renamed some of the files to more descriptive names. We provided an explanation of what the code does in the README file.
+
+> Also, you have 4 events in your trajectory, but for the event minor complication, there is no time to event defined in your Tx1.time function.
+
+In the assignment instructions it said that patients continue the treatment cycle if they experience only minor complications. We understood that each treatment cycle was fixed at 30 days.
+
+> Last, you assume the time to a major complication in Tx2 is symmetrical to TX1.
+
+We do indeed assume this, because we were instructed to, and we had limited time to do more distribution fitting. We could easily improve this in the model by changing the Tx2.Time function.
+
+> You give a normal distribution for your costs. However, for the distribution of costs, use a log-normal or gamma distribution, as costs cannot be negative (and a normal distribution can give you a negative number as a result)
+
+This is a valid point. But it is very unlikely that those distributions would return a negative cost because they have a large mean. We used the normal distribution because it is more straightforward to implement. Also, we are not sure if a gamma distribution is appropriate for most of the costs, as they are not meant to be skewed.
+
+> for example in the following code line of the function func.exp.costs you wrote this line: 
+total_cost <- total_cost + ((Tx1.Cycles+1) * (278+256+194)) + ((Tx2.Cycles+1) * (278+256+194))
+
+We are doing this only in the BCA simulation because that is for patient-level uncertainty, not parameter uncertainty. The PSA simulation uses functions to reflect uncertainties.
+
+> [If] you want to have a look at it again in a few years, it is easier if you can directly read what each function is doing. This holds for a general introduction of the formula but also within the formula, as described in the example below: 
+
+> An example is that for the function: Func.tx1cost you use the input parameter Tx1.complications. You created an If-statement with Tx1.complications ==1 , but it would be more readable if you can directly see what the 1 suggests, is it a minor or major complication.
+
+We do comment our code in various places to explain what events the numbers refer to. In the future, we would consider returning strings with (at least some of) the functions, in which case this would be self-explanatory.
+
+> For example in Tx1.Event you still use the previously defined probability of 3% of event death occurring. A suggestion is to fit a logistic regression model, to predict this probability of death (event ==1 in the data), based on sex and age of the patient. 
+
+We chose not to use the results of our logistic regression in determining the probability because neither of the two predictors (age and sex) were significant at the α = 0.10 level, which is the weakest threshold of statistical significance accepted by the scientific community. (Most journals would prefer to see a p value less than 5% in order to declare it “significant”). As you can see from our logistic regression results, neither predictor meets that criteria:
+
+```{r}
+summary(logreg_death)
+```
+Even though we had more than 500 observations, only 31 people died in those two cycles. It is well-known that binomial events with a low probability are difficult to test statistically and require a very large number of observations. A good example is vaccination: clinical trials with thousands of participants still do not find rare complications that emerge only once the vaccine has been administered to the general population. This happened with the 1976 swine flu vaccine, which caused a 1 per 100,000 increase in Guillain Barré syndrome [1]. More recently there is controversy that the AstraZeneca vaccine can (rarely) cause blood clots. 
+
+Additionally, implementing this would have lead to more code, which is an additional source of bugs and errors. 
+
+>You did not implement this function in your exp trajectory in any way. So you don’t use the function and patients still continue treatment, even though they don’t respond.
+
+This is simply incorrect. The exp.model uses the function Tx1.Event.alt which skips the additional treatment cycles if the helper function returns false.
+
+>However, you create three functions  (func.dx1cost, func.dx2cost and func.dx3cost) to incorporate uncertainties of costs for the diagnostic tests. These functions are never used again or implemented in your trajectory. 
+
+They are. The exp model uses function.exp.costs which calls up the func.dxcost helper functions.
+
+
 # Overall reflection
+
+# References
+<table>
+
+<tr valign="top">
+<td align="right" class="bibtexnumber">
+[<a name="https://doi.org/10.1002/ana.410090707">1</a>]
+</td>
+<td class="bibtexitem">
+Lawrence&nbsp;B. Schonberger, Eugene&nbsp;S. Hurwitz, Peter Katona, Robert&nbsp;C. Holman, and
+  Dennis&nbsp;J. Bregman.
+ Guillain-barré syndrome: Its epidemiology and associations with
+  influenza vaccination.
+ <em>Annals of Neurology</em>, 9(S1):31--38, 1981.
+[&nbsp;<a href="https://doi.org/10.1002/ana.410090707">DOI</a>&nbsp;| 
+<a href="http://arxiv.org/abs/https://onlinelibrary.wiley.com/doi/pdf/10.1002/ana.410090707">arXiv</a>&nbsp;| 
+<a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/ana.410090707">http</a>&nbsp;]
+
+</td>
+</tr>
+</table>
+
