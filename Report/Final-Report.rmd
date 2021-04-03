@@ -4,9 +4,9 @@ subtitle: "Group 4"
 author: "Alex Bujorianu (s2451980) & Rusheel Mehra"
 date: "01/04/2021"
 output:
+  word_document: default
   html_document:
     df_print: paged
-  word_document: default
   pdf_document:
     fig_caption: yes
 ---
@@ -44,6 +44,12 @@ The probabilistic sensitivity analysis (PSA) also accounts for parameter uncerta
 # Interpretation of the Results
 
 # Feedback provided
+
+The feedback we gave really focused on code quality and reproducibility. One of the most common mistakes we see (and which you, the teachers, should have discouraged) is the use of setwd(). Using this function means the code will only run on the programmer’s PC and no on else’s. We recommended setting relative paths inside the root directory instead. Another mistake the group made was having the distribution fitting done inside the simulation files instead of separately. When we found a mistake, they had to make the changes in multiple places.
+
+Also, we recommended that they use git to manage their source code, as they had to send us 2 different versions of their PSA simulation after we received it. 
+
+Lastly, we commented on programming best practices—for example, using helper functions, nested if statements to simplify conditional expressions, and so on.  
 
 # Feedback received
 
@@ -97,6 +103,22 @@ They are. The exp model uses function.exp.costs which calls up the func.dxcost h
 
 
 # Overall reflection
+
+**Approach to the assignment**: We took a really programmatic approach to this assignment, which served us well for the most part. Alex is an MBIT student who has done the software development course, and it was his idea to use git for the project; to test functions separately; and to try and write modular code. However, we found R extremely frustrating to use for serious programming. We didn’t know how to do unit tests in R. Basic data structures (like recursive lists) were missing. Print statements inside functions or trajectories didn’t seem to print when the model was executed. Finally, the error messages were really unhelpful because they didn’t even have a line number! Using break points didn’t help either; in fact, they seemed to have no effect until after the simulation had already run into errors.
+
+**Collaboration in pairs**: this was fine. We tried to divvy up the work as best we could. The branch functionality of git came in very handy at times.
+
+**Challenges encountered**: Neither of us were very experienced with R and even less so with simmer. We had to learn about a lot of peculiarities, like the clusterExport function; how to save data from the PSA simulation (which took as a while to figure out); how various functions worked; how to append to vectors (copy-on-write is weird); and even the indexing in R is very strange. It uses commas to index rows or columns. The indexing for recursive data structures is bizarre: we do not see why it has to be list_of_lists[[1]][1] instead of just list_of_lists[1][1] like you can do in Java with arrays.
+
+**What we learned from this course**: How to do DES simulation in R; how to fit distributions in R; how to do statistical programming in general. We also learned a lot about the theory of health simulation, though this didn’t come up so much in the practical assignment. The inclusion of economics was a nice touch. We would have liked it if the advanced topics were covered in a bit more detail; the lesson we had on meta-modelling and simulation optimisation felt rushed—there wasn’t enough time in one or two lessons to fully absorb that material. 
+
+Moreover, we would also really have appreciated some more *programming* guidance. A lot of the people doing this course don’t have a formal background in software development; they don’t know about unit testing, functional programming paradigms, types and data structures in R, etc. It would have helped if you guys could have covered debugging in more detail—there were times when we really got stuck on those extremely unhelpful error messages.
+
+**Our view on applying DES for health economic evaluations**: It’s complicated. One thing that’s clear to us is that you need good quality clinical trials with lots of data, in order to fit distributions and have accurate parameters. Furthermore, as your case study on meta-modelling showed us, the model is only as good as its underlying data. You can’t just extrapolate to a group, e.g. aneurysm screening in under 40s, based purely on simulation results. 
+
+Speaking of meta-modelling, it is our personal opinion that if you need a meta-model in the first place, your original model is probably too complex to begin with. We think the real reason meta-models perform well is because simpler models are sufficient; trying to capture 10% more real-life complexity can lead to 10x the computational burden (not to mention code complexity). More sophisticated models could just be kept around for validation purposes. 
+
+Also, as a programmer, Alex would find it hard to trust a health economic model if the codebase is really messy. A simpler bug-free model is better than a more complex model filled with bugs.
 
 # References
 <table>
