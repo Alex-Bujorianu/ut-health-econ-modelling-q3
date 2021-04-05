@@ -87,7 +87,7 @@ Tx1.Event.alt <- function(cycles, condition, response) {
 ##Data Analysis
 
 
-We analyze the available dataset in order to determine the patient-level variation as well as secon-order uncertainty in order to define parameters and distributions for various attributes of the patients.
+We analyze the available dataset which consists of trial data, in order to determine the patient-level variation as well as second-order uncertainty in order to define parameters and distributions for various attributes of the patients.
 
 ###First-order Uncertainty (Patient Level Variation)
 
@@ -95,10 +95,14 @@ We analyze the available dataset in order to determine the patient-level variati
 We analyzed the dataset to find the distribution of patients' ages based on their sex. Using the function gofstat and visual confirmation using the plot function, we found that the ages of male patients followed a lognormal distribution and the ages of the female patients best fit a Weibull distribution. Both distributions have a natural zero, i.e. the range of possible values drawn from these distributions is between 0 and infinity. This was ideal, since age cannot be negative.
 
 **Effectiveness based on condition**
-We also analyzed the dataset to determine if the effectiveness of the treatment varies based on the patient's conditon and if this variation is substantial. We found the difference in effectiveness to be 44.8% vs. 50% . Based on these figures, we determined that the patient's condition does not make a substantial difference in the effectiveness of the treatment.
+We also analyzed the dataset to determine if the effectiveness of the treatment varies based on the patient's condition and if this variation is substantial. We found the difference in effectiveness to be 44.8% vs. 50% . Based on these figures, we determined that the patient's condition does not make a substantial difference in the effectiveness of the treatment.
 
-**Effectiveness of second line of treatment based on the resposne to the first line treatment**
-By comparing patients who responded to treatment in the first line to patients who didn't, 
+**Effectiveness of second line of treatment based on the response to the first line treatment**
+By comparing patients who responded to treatment in the first line to patients who didn't, we were able to determine tht response in the first line substantially affects the effectiveness of treatment in the second line.
+
+**Distribution of the novel diagnostic tests**
+We fit a multivariate normal distribution to the results of the three novel diagnostic tests based on the first cycle of the first line of treatment. We opt for this distribution as the test results are correlated. We begin by separating the data based on whether the patient responded to the treatment or not. We confirm that the normal distribution is indeed a good fit for the individual tests. MGF theory tells us that if you add 3 normal distributions, you end up with a normal distribution whose mean is the sum of the other 3 means.
+Next, we determine threshold values for the three tests, above which the patient is expected to respond to the current treatment. We determine 0.8 to be the threshold values for all the three tests.
 
 ## Suportive Functions
 
