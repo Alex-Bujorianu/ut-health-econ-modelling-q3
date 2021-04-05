@@ -97,17 +97,14 @@ We analyzed the dataset to find the distribution of patients' ages based on thei
 We code some helper functions for the simulation model to help it assign attributes to the patients or determine the event to happen.
 
 Based on the previous analysis, we code functions to define the sex
-## Completing Risks
 
-## Differences between the experiemental and standard model
+## Differences between the experimental and standard model
 
-First, we modeled the current treatment strategy as the control strategy.
+The two models are almost identical except two things: in the exp model, the cost of the diagnostic tests is added to the calculations; and the exp model uses alternate functions (Tx1.Event.alt and Tx2.Event.alt) to prevent overtreatment based on the results on the novel diagnostic tests. 
 
 ## Differences betweenn PSA and BCA
 
-The base-case analysis (BCA) does not consider uncertainty in the model parameters, though it may reflect patient-level variation in models (i.e. stochastic uncertainty or first-order uncertainty).
-
-The probabilistic sensitivity analysis (PSA) also accounts for parameter uncertainty (i.e., second-order uncertainty).
+The base-case analysis (BCA) does not consider uncertainty in the model parameters, though it may reflect patient-level variation in models (i.e. stochastic uncertainty or first-order uncertainty). The probabilistic sensitivity analysis (PSA) also accounts for parameter uncertainty (i.e., second-order uncertainty). Some practical examples: in the BCA code, the exp model uses fixed costs for the diagnostic tests, whereas in the PSA code, the costs are drawn from a normal distribution. The cycle costs and day costs (modelled in func.tx1cost) are drawn from normal distributions in the PSA but not the BCA code. For the cost of major complications, we selected a gamma distribution as it is right-skewed and better reflects the uncertainty in major complications.
 
 ## Cost-effectiveness Estimation of the Novel Diagnostic Tests
 
