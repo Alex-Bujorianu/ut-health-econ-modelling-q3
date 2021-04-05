@@ -1,7 +1,7 @@
 ---
 title: "Health Economic Modelling: Final Report"
 subtitle: "Group 4"
-author: "Alex Bujorianu (s2451980) & Rusheel Mehra"
+author: "Alex Bujorianu (s2451980) & Rusheel Mehra(s2344211)"
 date: "01/04/2021"
 output:
   word_document: default
@@ -26,8 +26,8 @@ load("../Part_2/PSA-sim-environment.RData")
 # Process Description & DES Design
 
 "Describe and motivate the choices you made during data analysis steps, design of the DES model, the simulation results, and the interpretation of these results."
-
-We begin the process by building a simple simulation model of the best standard care. The best standard care (BSC) is the clinical pathway as studied in the clinical trial as seen in figure 1. After diagnosis, the patient enters the first line of treatment, henceforth referred to as Tx1. In Tx1, the patient has to undergo 5 treatment cycles. The patient can follow 5 trajectories within this line of treatment. The first is when the patient has no complications and completes a full cycle. In this event the patient proceeds to the next cycle. The second trajectory is when a patient dies during a cycle. In such an event, the patient exits the system. The third trajectory is when a patient has a major complication. In this event, the patient exits Tx1 but continues into the first follow up and then through the rest of the pathway 
+**Simulation model**:
+We begin the process by building a simple simulation model of the best standard care. The best standard care (BSC) is the clinical pathway as studied in the clinical trial as seen in figure 1. After diagnosis, the patient enters the first line of treatment, henceforth referred to as Tx1. In Tx1, the patient has to undergo 5 treatment cycles. The patient can follow 5 trajectories within this line of treatment. The first is when the patient has no complications and completes a full cycle. In this event the patient proceeds to the next cycle. The second trajectory is when a patient dies during a cycle. In such an event, the patient exits the system. The third trajectory is when a patient has a major complication. In this event, the patient exits Tx1 but continues into the first follow up and then through the rest of the pathway. So, in essence, if a patient experiences major complications, they are treated as they have completed all 5 cycles of the treatment line. THe fourth trajectory is when the patient experiences minor complications. Minor complications add health and economic burden but do not affect the patient's path through the system. The last trajectory is that  of a patient that has completed all the cycles of a treatment line. These patients move on to the follow up period.  In the follow up, the patient follows two possible trajectories, one where they live and one where they die. The patients who die in the follow up exit the system. After the first follow up, the remaining surviving patients enter the second treatment line, referred to as Tx2. Tx2 and the trajectories within it are identical to Tx1 and it's trajectories. The patients surviving after Tx2 go in to the final phase of the pathway, the second follow up, also known as palliative care. This last phase lasts for a fixed duration or till the patient dies, whichever is sooner.
 
 ```{r, echo=FALSE}
 knitr::include_graphics("clinical-pathway.png", error = FALSE)
