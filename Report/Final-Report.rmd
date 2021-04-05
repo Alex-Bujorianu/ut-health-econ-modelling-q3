@@ -35,13 +35,54 @@ After diagnosis, the patient enters the first line of treatment, henceforth refe
 
 The fourth trajectory is when the patient experiences minor complications. Minor complications add health and economic burden but do not affect the patient’s path through the system.
 
-The patients who survived Tx1 move on to the follow up period.  In the follow up, the patient follows two possible trajectories, one where they live and one where they die. The patients who dies in the follow up exits the system. 
+The patients who survived Tx1 move on to the follow up period.  In the follow up, the patient follows two possible trajectories, one where they live and one where they die. The patients who die in the follow up exit the system. 
 
 After the first follow up, the surviving patients enter the second treatment line, referred to as Tx2. Tx2 and the trajectories within it are identical to Tx1 and its trajectories. The patients who survive Tx2 go in to the final phase of the pathway, the second follow up, also known as palliative care. The final phase lasts exactly 100 days. We understand that the patients will all die at the end of this period (hence the term palliative care) but we record them as “alive” for modelling purposes—it helps us to distinguish between patients who died prematurely and those who survived the full cycle. 
 
 ```{r, echo=FALSE}
 knitr::include_graphics("clinical-pathway.png", error = FALSE)
 ```
+
+## Competing Risks
+
+One of the most important aspects of the model is the need to handle mutually exclusive events with different probabilities. During each cycle, there are three possible risks: death, major complications, and minor complications. Additionally, the code has to check whether the patient has completed the cycles, and—for the experimental model—whether the diagnostic tests indicate the patient should discontinue treatment on account of non-response. We decided to check for the most significant events first, based on the evaluation of the else if statements: death, major complication and then minor complication.
+
+Note two things: if the patient has already undergone the full 5 cycles of treatment, they are taken out of the treatment cycle and complications due to treatment do not occur. Likewise, in the exp model, the code checks whether patients are responding *before* evaluating the complication probabilities (because complications won’t happen if the patient is not treated unnecessarily). 
+
+The death if statement comes first because patients could in principle die on the last treatment cycle (the 5th one). 
+
+```
+Tx1.Event.alt <- function(cycles, condition, response) {
+      #about 10% chance of minor complication, 4% major, 3% death
+      minor_comp <-  if (condition==0 && response==1) {ifelse(beta_minor_good_response >= runif(1), 1, 0)} else
+        if (condition==1 && response==1) {ifelse(beta_minor_poor_response >= runif(1), 1, 0)} else
+          if (condition==0 && response==0) {ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0)} else
+            ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
+      major_comp <- ifelse(runif(1) < 0.04, 1, 0);
+      death <- ifelse(runif(1) < 0.03, 1, 0);
+      #First check to see if the patient is alive, then check for complications
+      if (death == 1) {
+        return(2)
+      }
+      else if (cycles > 4){ #if the patient has survived the cycles, they are taken out of the simulation
+        return(5)
+      }
+      #Stop the treatment if the patient is not responding, do not overtreat
+      #We do these tests BEFORE the treatment cycle. So complications should not occur. 
+      else if (cycles > 0 && Tx1.continue(response)==FALSE) {
+        return(5)
+      }
+      else if (minor_comp == 1) {
+        return(4) 
+      }
+      else if (major_comp == 1) {
+        return(3)
+      }
+      else {
+        return(1)
+      }                                                                         
+    }
+    ```
 
 **Data Analysis**:
 
@@ -51,9 +92,9 @@ The base-case analysis (BCA) does not consider uncertainty in the model paramete
 
 The probabilistic sensitivity analysis (PSA) also accounts for parameter uncertainty (i.e., second-order uncertainty).
 
-# Cost-effectiveness Estimation of the Novel Diagnostic Tests
+## Cost-effectiveness Estimation of the Novel Diagnostic Tests
 
-# Interpretation of the Results
+## Interpretation of the Results
 
 # Feedback provided
 
@@ -104,7 +145,6 @@ summary(logreg_death)
 Even though we had more than 500 observations, only 31 people died in those two cycles. It is well-known that binomial events with a low probability are difficult to test statistically and require a very large number of observations. A good example is vaccination: clinical trials with thousands of participants still do not find rare complications that emerge only once the vaccine has been administered to the general population. This happened with the 1976 swine flu vaccine, which caused a 1 per 100,000 increase in Guillain Barré syndrome [1]. More recently there is controversy that the AstraZeneca vaccine can (rarely) cause blood clots. 
 
 Additionally, implementing this would have lead to more code, which is an additional source of bugs and errors. 
-
 >You did not implement this function in your exp trajectory in any way. So you don’t use the function and patients still continue treatment, even though they don’t respond.
 
 This is simply incorrect. The exp.model uses the function Tx1.Event.alt which skips the additional treatment cycles if the helper function returns false.
