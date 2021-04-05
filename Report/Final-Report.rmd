@@ -84,9 +84,26 @@ Tx1.Event.alt <- function(cycles, condition, response) {
     }
     ```
 
-**Data Analysis**:
+##Data Analysis
+
+We analyze the available dataset in order to determine in order to define parameters and distributions for various attributes of the patients.
+
+**Age & Gender**
+We analyzed the dataset to find the distribution of patients' ages based on their sex. Using the function gofstat and visual confirmation using the plot function, we found that the ages of male patients followed a lognormal distribution and the ages of the female patients best fit a Weibull distribution.
+
+
+## Suportive Functions
+
+We code some helper functions for the simulation model to help it assign attributes to the patients or determine the event to happen.
+
+Based on the previous analysis, we code functions to define the sex
+## Completing Risks
+
+## Differences between the experiemental and standard model
 
 First, we modeled the current treatment strategy as the control strategy.
+
+## Differences betweenn PSA and BCA
 
 The base-case analysis (BCA) does not consider uncertainty in the model parameters, though it may reflect patient-level variation in models (i.e. stochastic uncertainty or first-order uncertainty).
 
