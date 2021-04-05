@@ -86,10 +86,23 @@ Tx1.Event.alt <- function(cycles, condition, response) {
 
 ##Data Analysis
 
-We analyze the available dataset in order to determine in order to define parameters and distributions for various attributes of the patients.
+
+We analyze the available dataset in order to determine the patient-level variation as well as secon-order uncertainty in order to define parameters and distributions for various attributes of the patients.
+
+###First-order Uncertainty (Patient Level Variation)
 
 **Age & Gender**
 We analyzed the dataset to find the distribution of patients' ages based on their sex. Using the function gofstat and visual confirmation using the plot function, we found that the ages of male patients followed a lognormal distribution and the ages of the female patients best fit a Weibull distribution.
+
+**Effectiveness based on condition**
+We also analyzed the dataset to determine if the effectiveness of the treatment varies based on the patient's conditon and if this variation is substantial. We found the difference in effectiveness to be 44.8% vs. 50% . Based on these figures, we determined that the patient's condition does not make a substantial difference in the effectiveness of the treatment.
+
+**Effectiveness of second line of treatment based on the resposne to the first line treatment**
+By comparing patients who responded to treatment in the first line to patients who didn't, 
+
+
+###Second-Order Uncertainty
+
 
 
 ## Suportive Functions
