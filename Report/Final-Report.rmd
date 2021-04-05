@@ -82,7 +82,7 @@ Tx1.Event.alt <- function(cycles, condition, response) {
         return(1)
       }                                                                         
     }
-    ```
+```
 
 ##Data Analysis
 
@@ -97,10 +97,10 @@ We analyzed the dataset to find the distribution of patients' ages based on thei
 **Effectiveness based on condition**
 We also analyzed the dataset to determine if the effectiveness of the treatment varies based on the patient's conditon and if this variation is substantial. We found the difference in effectiveness to be 44.8% vs. 50% . Based on these figures, we determined that the patient's condition does not make a substantial difference in the effectiveness of the treatment.
 
-**Effectiveness of second line of treatment based on the resposne to the first line treatment**
+**Effectiveness of second line of treatment based on the response to the first line treatment**
 By comparing patients who responded to treatment in the first line to patients who didn't, 
 
-## Suportive Functions
+## Supportive Functions
 
 Based on the previous analysis, we code functions to define the sex of the patients; the age based on the sex; the costs of the diagnostic tests (only in PSA, they are hardcoded in BCA); functions to determine the events in Tx1, followup1 and Tx2; functions to determine the time patients spend in those cycles, incorporating time-to-event distributions; and cost, utility and qaly functions. Some helper functions were also defined in order to simplify the more complex functions.
 
@@ -108,7 +108,7 @@ Based on the previous analysis, we code functions to define the sex of the patie
 
 The two models are almost identical except two things: in the exp model, the cost of the diagnostic tests is added to the calculations; and the exp model uses alternate functions (Tx1.Event.alt and Tx2.Event.alt) to prevent overtreatment based on the results on the novel diagnostic tests. 
 
-## Differences betweenn PSA and BCA
+## Differences between PSA and BCA
 
 The base-case analysis (BCA) does not consider uncertainty in the model parameters, though it may reflect patient-level variation in models (i.e. stochastic uncertainty or first-order uncertainty). The probabilistic sensitivity analysis (PSA) also accounts for parameter uncertainty (i.e., second-order uncertainty). Some practical examples: in the BCA code, the exp model uses fixed costs for the diagnostic tests, whereas in the PSA code, the costs are drawn from a normal distribution. The cycle costs and day costs (modelled in func.tx1cost) are drawn from normal distributions in the PSA but not the BCA code. For the cost of major complications, we selected a gamma distribution as it is right-skewed and better reflects the uncertainty in major complications.
 
