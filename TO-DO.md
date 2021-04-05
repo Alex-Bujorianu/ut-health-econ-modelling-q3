@@ -6,6 +6,6 @@
 4. <s>Likewise, in BCA we do not use beta distributions for the probability of death.</s> Done.
 5. The way we are modelling the uncertainty in costs is that the function returns different values every time it is called, meaning that for every patient, and for every cycle, the value will be a little different. This is not necessarily wrong, but it’s worth mentioning. We might ideally want the function to only return different values  *per simulation run*. 
 6. <s>Are Tx1.Time and Tx2.Time supposed to return 30 or draw from a distribution?</s> From what we understood from the PDF document, the duration of a treatment is fixed at 30 days. We only fitted distributions for time-to-death and time-to-major-complication because those make the patient stop treatment.
-7. The way we handle major complications is incorrect! The patient should stop treatment with Tx1 or Tx2 if they get major complications (moving into followup 1 or palliative care). They should not continue with it.
+7. <s>The way we handle major complications is incorrect! The patient should stop treatment with Tx1 or Tx2 if they get major complications (moving into followup 1 or palliative care). They should not continue with it.</s>
 
 Once we have resolved the issues above, we can run the PSA simulation with a large number of runs, and repeat the BCA simulation if needed.
