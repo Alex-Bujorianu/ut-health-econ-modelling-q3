@@ -36,6 +36,7 @@ After the first follow up, the remaining surviving patients enter the second tre
 knitr::include_graphics("clinical-pathway.png", error = FALSE)
 ```
 
+**Data Analysis**:
 
 First, we modeled the current treatment strategy as the control strategy.
 
