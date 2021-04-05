@@ -103,7 +103,7 @@ By comparing patients who responded to treatment in the first line to patients w
 **Distribution of the novel diagnostic tests**
 We fit a multivariate normal distribution to the results of the three novel diagnostic tests based on the first cycle of the first line of treatment. We opt for this distribution as the test results are correlated. We begin by separating the data based on whether the patient responded to the treatment or not. We confirm that the normal distribution is indeed a good fit for the individual tests. MGF theory tells us that if you add 3 normal distributions, you end up with a normal distribution whose mean is the sum of the other 3 means.
 
-Next, we determine threshold values for the three tests, above which the patient is expected to respond to the current treatment. We determine 0.8 to be the threshold values for all the three tests.
+Next, we determine threshold values for the three tests, above which the patient is expected to respond to the current treatment. We determine the threshold values for the three tests Dx1, Dx2 and Dx3 to be 0.94, 0.17 and 4.3 respectively.
 
 ## Supportive Functions
 
