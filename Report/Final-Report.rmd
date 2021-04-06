@@ -144,7 +144,7 @@ As we can see, the BSC strategy has a higher proportion of both deaths and major
 
 We calculated the ICER to be €27,647. This is almost identical to the ICER we calculated for the large sample dataset we were provided (€27,939). 
 
-```{r}
+```{r echo=FALSE}
 WTP_plot
 ```
 If we plot the Willingness to Pay Threshold of €20,000/QALY (used in the Netherlands) and a steeper €80,000/QALY line, we see that most of the points (90%) in our simulation fall below the €20,000 line. Paradoxically, they do not fall below the €80K line. This is because, when dealing with interventions that save money in exchange for a small loss in quality of life—like, for example, e-health video consultations—a higher willingness to pay means it is harder for such an intervention to be declared cost-effective. A higher WTP essentially means a higher financial value placed on a year of life.
@@ -168,7 +168,7 @@ knitr::include_graphics("international-WTP-table.png", error = FALSE)
 
 One might question the ethics of introducing a healthcare intervention that harms patients (compared to the existing best standard of care) in exchange for cost savings. This argument is somewhat naïve because it does not take into account opportunity cost: by saving a lot of money on one intervention, other treatments can be paid for in exchange. These treatments may well end up saving more life years, for other patients, than the existing best standard standard of care does. Economic resources are limited; economics, as Robinson put it, is the study of scarcity [2]. As soon as we accept that healthcare resources are limited, we have to make intelligent choices between competing options in order to maximise utility on the budget line.
 
-Despite this, it remains difficult, politically, to advocate for replacing an existing treatment with a more cost effective one—whereas it is very hard for governments to say “no” to very expensive new treatments. There are numerous such examples: Orkambi, the cystic fibrosis drug, was initially refused by the Dutch government, but then the minister relented; likewise PrEP (Pre-Exposure Prophylaxia), a medicine that prevents HIV infection, is not yet generally available on the NHS.    
+Despite this, it remains difficult, politically, to advocate for replacing an existing treatment with a more cost effective one—whereas it is very hard for governments to say “no” to very expensive new treatments. There are numerous such examples: Orkambi, the cystic fibrosis drug, was initially refused by the Dutch government, but then the minister relented [4]. 
 
 # Feedback provided
 
@@ -245,6 +245,20 @@ Speaking of meta-modelling, it is our personal opinion that if you need a meta-m
 Also, as a programmer, Alex would find it hard to trust a health economic model if the codebase is really messy. A simpler bug-free model is better than a more complex model filled with bugs.
 
 # References
+<head>
+<title>bibliography</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta name="generator" content="bibtex2html">
+</head>
+
+<body>
+
+<!-- This document was automatically generated with bibtex2html 1.99
+     (see http://www.lri.fr/~filliatr/bibtex2html/),
+     with the following command:
+     bibtex2html --no-abstract bibliography.bib  -->
+
+
 <table>
 
 <tr valign="top">
@@ -257,11 +271,60 @@ Lawrence&nbsp;B. Schonberger, Eugene&nbsp;S. Hurwitz, Peter Katona, Robert&nbsp;
  Guillain-barré syndrome: Its epidemiology and associations with
   influenza vaccination.
  <em>Annals of Neurology</em>, 9(S1):31--38, 1981.
-[&nbsp;<a href="https://doi.org/10.1002/ana.410090707">DOI</a>&nbsp;| 
+[&nbsp;<a href="bibliography_bib.html#https://doi.org/10.1002/ana.410090707">bib</a>&nbsp;| 
+<a href="https://doi.org/10.1002/ana.410090707">DOI</a>&nbsp;| 
 <a href="http://arxiv.org/abs/https://onlinelibrary.wiley.com/doi/pdf/10.1002/ana.410090707">arXiv</a>&nbsp;| 
 <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/ana.410090707">http</a>&nbsp;]
 
 </td>
 </tr>
-</table>
+
+
+<tr valign="top">
+<td align="right" class="bibtexnumber">
+[<a name="robbins2007essay">2</a>]
+</td>
+<td class="bibtexitem">
+Lionel Robbins.
+ <em>An essay on the nature and significance of economic science</em>.
+ Ludwig von Mises Institute, 2007.
+[&nbsp;<a href="bibliography_bib.html#robbins2007essay">bib</a>&nbsp;]
+
+</td>
+</tr>
+
+
+<tr valign="top">
+<td align="right" class="bibtexnumber">
+[<a name="WOODS2016929">3</a>]
+</td>
+<td class="bibtexitem">
+Beth Woods, Paul Revill, Mark Sculpher, and Karl Claxton.
+ Country-level cost-effectiveness thresholds: Initial estimates and
+  the need for further research.
+ <em>Value in Health</em>, 19(8):929--935, 2016.
+[&nbsp;<a href="bibliography_bib.html#WOODS2016929">bib</a>&nbsp;| 
+<a href="https://doi.org/10.1016/j.jval.2016.02.017">DOI</a>&nbsp;| 
+<a href="https://www.sciencedirect.com/science/article/pii/S1098301516000644">http</a>&nbsp;]
+<blockquote><font size="-1">
+Keywords: benefits package, cost-effectiveness, quality-adjusted life-years, threshold, universal health care, willingness to pay
+</font></blockquote>
+
+</td>
+</tr>
+
+
+<tr valign="top">
+<td align="right" class="bibtexnumber">
+[<a name="OrkambiPaid">4</a>]
+</td>
+<td class="bibtexitem">
+Cystic fibrosis drug will be paid for after all, outgoing health minister says.
+ 2017.
+[&nbsp;<a href="bibliography_bib.html#OrkambiPaid">bib</a>&nbsp;| 
+<a href="https://www.dutchnews.nl/news/2017/10/cystic-fibrosis-drug-will-be-paid-for-after-all-outgoing-health-minister-says/">http</a>&nbsp;]
+
+</td>
+</tr>
+</table
 
