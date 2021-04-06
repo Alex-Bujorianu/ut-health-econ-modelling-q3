@@ -185,7 +185,7 @@ knitr::include_graphics("international-WTO-table.png", error = FALSE)
 
 One might question the ethics of introducing a healthcare intervention that harms patients (compared to the existing best standard of care) in exchange for cost savings. This argument is somewhat naïve because it does not take into account opportunity cost: by saving a lot of money on one intervention, other treatments can be paid for in exchange. These treatments may well end up saving more life years, for other patients, than the existing best standard standard of care does. Economic resources are limited; economics, as Robinson put it, is the study of scarcity [3]. As soon as we accept that healthcare resources are limited, we have to make intelligent choices between competing options in order to maximise utility on the budget line.
 
-Despite this, it remains difficult, politically, to advocate for replacing an existing treatment with a more cost effective one—whereas it is very hard for governments to say “no” to very expensive new treatments. 
+Despite this, it remains difficult, politically, to advocate for replacing an existing treatment with a more cost effective one—whereas it is very hard for governments to say “no” to very expensive new treatments. There are numerous such examples: Orkambi, the cystic fibrosis drug, was initially refused by the Dutch government, but then the minister relented; likewise PrEP (Pre-Exposure Prophylaxia), a medicine that prevents HIV infection, is not yet generally available on the NHS.    
 
 # Feedback provided
 
