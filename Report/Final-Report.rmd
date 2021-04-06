@@ -6,10 +6,10 @@ date: "06/04/2021"
 linestretch: 1.25
 fontsize: 11pt
 output:
-  pdf_document:
-    fig_caption: yes
   html_document:
     df_print: paged
+  pdf_document:
+    fig_caption: yes
   word_document: default
 ---
 
