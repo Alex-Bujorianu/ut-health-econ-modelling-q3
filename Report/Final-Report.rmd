@@ -86,26 +86,19 @@ Tx1.Event.alt <- function(cycles, condition, response) {
     }
 ```
 
-##Data Analysis
-
+## Data Analysis
 
 We analyze the available dataset which consists of trial data, in order to determine the patient-level variation as well as second-order uncertainty in order to define parameters and distributions for various attributes of the patients.
 
-**Age & Gender**
-We analyzed the dataset to find the distribution of patients' ages based on their sex. Using the function gofstat and visual confirmation using the plot function, we found that the ages of male patients followed a lognormal distribution and the ages of the female patients best fit a Weibull distribution. Both distributions have a natural zero, i.e. the range of possible values drawn from these distributions is between 0 and infinity. This was ideal, since age cannot be negative.
+**Age & Gender:** We analyzed the dataset to find the distribution of patients' ages based on their sex. Using the function gofstat and visual confirmation using the plot function, we found that the ages of male patients followed a lognormal distribution and the ages of the female patients best fit a Weibull distribution. Both distributions have a natural zero, i.e. the range of possible values drawn from these distributions is between 0 and infinity. This was ideal, since age cannot be negative.
 
-**Effectiveness based on condition**
-We also analyzed the dataset to determine if the effectiveness of the treatment varies based on the patient's condition and if this variation is substantial. We found the difference in effectiveness to be 44.8% vs. 50% . Based on these figures, we determined that the patient's condition does not make a substantial difference in the effectiveness of the treatment.
+**Effectiveness based on condition:** We also analyzed the dataset to determine if the effectiveness of the treatment varies based on the patient's condition and if this variation is substantial. We found the difference in effectiveness to be 44.8% vs. 50% . Based on these figures, we determined that the patient's condition does not make a substantial difference in the effectiveness of the treatment.
 
-**Effectiveness of second line of treatment based on the response to the first line treatment**
-By comparing patients who responded to treatment in the first line to patients who didn't, we were able to determine tht response in the first line substantially affects the effectiveness of treatment in the second line.
+**Effectiveness of second line of treatment based on the response to the first line treatment:** By comparing patients who responded to treatment in the first line to patients who didn’t, we were able to determine that response in the first line substantially affects the effectiveness of treatment in the second line.
 
-**Distribution of the novel diagnostic tests**
-We fit a multivariate normal distribution to the results of the three novel diagnostic tests based on the first cycle of the first line of treatment. We opt for this distribution as the test results are correlated, i.e. getting a high value on the first result makes it more likely the patient will have high values on the other two as well.
+**Distribution of the novel diagnostic tests:** We fit a multivariate normal distribution to the results of the three novel diagnostic tests based on the first cycle of the first line of treatment. We opt for this distribution as the test results are correlated, i.e. getting a high value on the first result makes it more likely the patient will have high values on the other two as well.
 
-We begin by separating the data based on whether the patient responded to the treatment or not (determined by the PET scan). We confirm that the normal distribution is indeed a good fit for the individual tests. MGF theory tells us that if you add 3 normal distributions, you end up with a normal distribution whose mean is the sum of the other 3 means.
-
-Next, we find threshold values for the three tests using the quantile function: if one of the values is above the threshold, the patient is 80% likely to be a non-responder. We determine the threshold values for the three tests Dx1, Dx2 and Dx3 to be 0.94, 0.17 and 4.3 respectively. We validated this model against the actual data and had a 70% correct classification rate.
+We begin by separating the data based on whether the patient responded to the treatment or not (determined by the PET scan). We confirm that the normal distribution is indeed a good fit for the individual tests. Next, we find threshold values for the three tests using the quantile function: if one of the values is above the threshold, the patient is 80% likely to be a non-responder. We determine the threshold values for the three tests Dx1, Dx2 and Dx3 to be 0.94, 0.17 and 4.3 respectively. We validated this model against the actual data and had a 70% correct classification rate.
 
 
 ```{r}
@@ -114,17 +107,13 @@ print(m_cov)
 
 *The covariance matrix for the different test thresholds. If the variables were independent, they would have 0 covariance in relation each other. We see that while there is a correlation, it seems to be pretty weak.*
 
-**Probability of experiencing major or minor complications during treatment based on response and condition**
-To find the probability of experiencing major or minor complications, we first stratify the data based on condition and then further based on response. We find that the condition and response of a patient does affect the probability of experiencing a complication. The probabilities vary from 0.0047 to 0.1875 for major complications. For minor complications, the probabilities vary from 0.02 to 0.175.
+**Probability of experiencing major or minor complications during treatment based on response and condition:** To find the probability of experiencing major or minor complications, we first stratify the data based on condition and then further based on response. We find that the condition and response of a patient does affect the probability of experiencing a complication. The probabilities vary from 0.0047 to 0.1875 for major complications. For minor complications, the probabilities vary from 0.02 to 0.175.
 
-**Distribution for the probability of experiencing minor complications during treatment**
-To fit a distribution to the probability of experiencing minor complications during treatment we chose to use a beta distribution. We can divide the data into two events, a patient experiencing minor complications or not. Therefore, a beta distribution will be a good match with the as the data is binomial. There are r events in n persons. Where n is the number of persons in the treatment cycle and r is number of occurrences of the event a patient experiences minor complications. As seen response and condition of a patient does affect the probability of experiencing minor complications. Therefore, we stratify the data based on response and condtition and fit four different beta distributions to each vector.
+**Distribution for the probability of experiencing minor complications during treatment:** To fit a distribution to the probability of experiencing minor complications during treatment we chose to use a beta distribution. We can divide the data into two events, a patient experiencing minor complications or not. Therefore, a beta distribution will be a good match with the as the data is binomial. There are r events in n persons. Where n is the number of persons in the treatment cycle and r is number of occurrences of the event a patient experiences minor complications. As seen response and condition of a patient does affect the probability of experiencing minor complications. Therefore, we stratify the data based on response and condition and fit four different beta distributions to each vector.
 
-**Distributions for the mean utility of patients in Tx1 & Tx2 who did not experience any complications based on their response**
-To fit the distributions, we first stratify the data from the first cycle in both lines of treatment based on whether the patient responds or not. We do this individually for Tx1 and Tx2. By doing a visual check of the histograms for the individual vectors we see that all of them seem to have a normal bell curve. In addition to this, utility of a patient is never less than zero. Therefore, we conclude that lognormal will be a good fit for the vectors. We verify this by using the function gofstat. We then fit lognormal distributions to the individual vectors. 
+**Distributions for the mean utility of patients in Tx1 & Tx2 who did not experience any complications based on their response:** To fit the distributions, we first stratify the data from the first cycle in both lines of treatment based on whether the patient responds or not. We do this individually for Tx1 and Tx2. By doing a visual check of the histograms for the individual vectors we see that all of them seem to have a normal bell curve. In addition to this, utility of a patient is never less than zero. Therefore, we conclude that lognormal will be a good fit for the vectors. We verify this by using the function gofstat. We then fit lognormal distributions to the individual vectors. 
 
-**Distribution for probability of death in first follow up**
-To fit a distribution to the probability of death in the first follow up we chose to use a beta distribution as it is a good match with the binomial data. As mentioned in the Simulation model section, there are two possibilities, either a person survives the follow up or they die. There are r events in n persons. Where n is the number of persons in the first follow up and r is number of occurrences of the event a patient dying.
+**Distribution for probability of death in first follow up:** To fit a distribution to the probability of death in the first follow up we chose to use a beta distribution. The beta distribution returns a value between 0 and 1 which perfectly matches the probability parameter in the binomial distribution. 
 
 ## Supportive Functions
 
@@ -138,17 +127,11 @@ The two models are almost identical except two things: in the exp model, the cos
 
 The base-case analysis (BCA) does not consider uncertainty in the model parameters, though it may reflect patient-level variation in models (i.e. stochastic uncertainty or first-order uncertainty). The probabilistic sensitivity analysis (PSA) also accounts for parameter uncertainty (i.e., second-order uncertainty). Some practical examples: in the BCA code, the exp model uses fixed costs for the diagnostic tests, whereas in the PSA code, the costs are drawn from a normal distribution. The cycle costs and day costs (modelled in func.tx1cost) are drawn from normal distributions in the PSA but not the BCA code. For the cost of major complications, we selected a gamma distribution as it is right-skewed and better reflects the uncertainty in major complications.
 
-```{r}
-hist(rgamma(1000, 546, 0.05))
-```
-
-*The gamma distribution for the cost of major complications.*
-
 ## Cost-effectiveness Estimation of the Novel Diagnostic Tests
 
 We found that our PSA data showed negative costs and negative effects for the exp strategy compared to the bsc model. This is likely to be a mistake in our model (perhaps we calculated the qalys or the costs incorrectly). It is possible to see why the exp strategy could save money: although the tests do cost a two hundred euros each (with a mean of €600 per cycle), the Tx1 cycle cost is €500 per cycle + day cost, and Tx2 costs a whopping €4500 per treatment cycle. Moreover, preventing overtreatment results in fewer complications, especially major ones, which are extremely expensive (average of €11,000). Let us compare the average proportion of major complications between the exp and bsc strategies:
 
-```{r}
+```{r echo=FALSE}
 deathbsc= mean(results[5,])
 deathpsaexp= mean(results[6,])
 majorpsa= mean(results[7,])
@@ -168,7 +151,7 @@ If we plot the Willingness to Pay Threshold of €20,000/QALY (used in the Nethe
 
 Because the intervention has negative costs and effects, the CEAC curve is inverted:
 
-```{r}
+```{r echo=FALSE}
 plot(x=seq(0, 200000, length.out = 201), y=percentages_vector, xlab="Willingness to Pay Threshold",
   ylab="Points below WTP curve", main="CEAC curve")
 ```
@@ -178,12 +161,12 @@ plot(x=seq(0, 200000, length.out = 201), y=percentages_vector, xlab="Willingness
 Of course, a WTP of €80,000 is extremely high and not very realistic. A WTP of €20,000 is already one of the highest in the world (see international comparison). At this more realistic threshold, 90% of our results fall below the line.
 
 ```{r, echo=FALSE}
-knitr::include_graphics("international-WTO-table.png", error = FALSE)
+knitr::include_graphics("international-WTP-table.png", error = FALSE)
 ```
 
-*International comparison of CETs (€/QALY or $/QALY). Countries like Malawi and Cambodia have CETs as low as a few hundred euros per QALY.**
+*International comparison of CETs (€/QALY or $/QALY). Countries like Malawi and Cambodia have CETs as low as a few hundred euros per QALY. [3]*
 
-One might question the ethics of introducing a healthcare intervention that harms patients (compared to the existing best standard of care) in exchange for cost savings. This argument is somewhat naïve because it does not take into account opportunity cost: by saving a lot of money on one intervention, other treatments can be paid for in exchange. These treatments may well end up saving more life years, for other patients, than the existing best standard standard of care does. Economic resources are limited; economics, as Robinson put it, is the study of scarcity [3]. As soon as we accept that healthcare resources are limited, we have to make intelligent choices between competing options in order to maximise utility on the budget line.
+One might question the ethics of introducing a healthcare intervention that harms patients (compared to the existing best standard of care) in exchange for cost savings. This argument is somewhat naïve because it does not take into account opportunity cost: by saving a lot of money on one intervention, other treatments can be paid for in exchange. These treatments may well end up saving more life years, for other patients, than the existing best standard standard of care does. Economic resources are limited; economics, as Robinson put it, is the study of scarcity [2]. As soon as we accept that healthcare resources are limited, we have to make intelligent choices between competing options in order to maximise utility on the budget line.
 
 Despite this, it remains difficult, politically, to advocate for replacing an existing treatment with a more cost effective one—whereas it is very hard for governments to say “no” to very expensive new treatments. There are numerous such examples: Orkambi, the cystic fibrosis drug, was initially refused by the Dutch government, but then the minister relented; likewise PrEP (Pre-Exposure Prophylaxia), a medicine that prevents HIV infection, is not yet generally available on the NHS.    
 
@@ -220,15 +203,13 @@ total_cost <- total_cost + ((Tx1.Cycles+1) * (278+256+194)) + ((Tx2.Cycles+1) * 
 
 We are doing this only in the BCA simulation because that is for patient-level uncertainty, not parameter uncertainty. The PSA simulation uses functions to reflect uncertainties.
 
-> [If] you want to have a look at it again in a few years, it is easier if you can directly read what each function is doing. This holds for a general introduction of the formula but also within the formula, as described in the example below: 
-
 > An example is that for the function: Func.tx1cost you use the input parameter Tx1.complications. You created an If-statement with Tx1.complications ==1 , but it would be more readable if you can directly see what the 1 suggests, is it a minor or major complication.
 
 We do comment our code in various places to explain what events the numbers refer to. In the future, we would consider returning strings with (at least some of) the functions, in which case this would be self-explanatory.
 
 > For example in Tx1.Event you still use the previously defined probability of 3% of event death occurring. A suggestion is to fit a logistic regression model, to predict this probability of death (event ==1 in the data), based on sex and age of the patient. 
 
-We chose not to use the results of our logistic regression in determining the probability because neither of the two predictors (age and sex) were significant at the α = 0.10 level, which is the weakest threshold of statistical significance accepted by the scientific community. (Most journals would prefer to see a p value less than 5% in order to declare it “significant”). As you can see from our logistic regression results, neither predictor meets that criteria:
+We chose not to use the results of our logistic regression in determining the probability because neither of the two predictors (age and sex) were significant at the α = 0.10 level, which is the weakest threshold of statistical significance accepted by the scientific community. As you can see from our logistic regression results, neither predictor meets that criteria:
 
 ```{r}
 summary(logreg_death)
