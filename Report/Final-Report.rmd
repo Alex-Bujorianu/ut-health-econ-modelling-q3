@@ -21,6 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, include=FALSE}
 load("../Part_2/PSA-sim-environment.RData")
 load("../Part_2/Dx-environment.RData")
+load("../Data/our_PSA-analysis-env.RData")
 ```
 
 
@@ -141,7 +142,24 @@ The base-case analysis (BCA) does not consider uncertainty in the model paramete
 hist(rgamma(1000, 546, 0.05))
 ```
 
+*The gamma distribution for the cost of major complications.*
+
 ## Cost-effectiveness Estimation of the Novel Diagnostic Tests
+
+We found that our PSA data showed negative costs and negative effects for the exp strategy compared to the bsc model. This is likely to be a mistake in our model (perhaps we calculated the qalys or the costs incorrectly). It is possible to see why the exp strategy could save money: although the tests do cost a two hundred euros each (with a mean of €600 per cycle), the Tx1 cycle cost is €500 per cycle + day cost, and Tx2 costs a whopping €4500 per treatment cycle. Moreover, preventing overtreatment results in fewer complications, especially major ones, which are extremely expensive (average of €11,000). Let us compare the average proportion of major complications between the exp and bsc strategies:
+
+```{r}
+deathbsc= mean(results[5,])
+deathpsaexp= mean(results[6,])
+majorpsa= mean(results[7,])
+majorpsaexp= mean(results[8,])
+barplot(c(deathbsc,deathpsaexp,majorpsa,majorpsaexp), main="Comparison of deaths and major complications",
+        ylab = "Proportion",
+        names.arg = c("Deaths BSC", "Deaths EXP", "Majors BSC", "Majors EXP"))
+```
+As we can see, the BSC strategy has a higher proportion of both deaths and major complications.
+
+We calculated the ICER to be €27,647. 
 
 ## Interpretation of the Results
 

@@ -87,3 +87,10 @@ for (i in seq(0, 200000, length.out = 201)) {
 
 plot(x=seq(0, 200000, length.out = 201), y=percentages_vector, xlab="Willingness to Pay Threshold",
   ylab="Points below WTP curve", main="CEAC curve")
+
+#Let's look at the percentages of death and complications between models
+
+counts <- data.frame(c("death bsc", mean(results[5,])), c("death exp", mean(results[6,])), c("major comp bsc", mean(results[7,])),
+                     c("major comp exp", mean(results[8,])))
+#barplot(counts, main="Death and complications in the two models")
+
