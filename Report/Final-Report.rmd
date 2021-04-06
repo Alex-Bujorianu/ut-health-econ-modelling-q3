@@ -1,14 +1,16 @@
 ---
 title: "Health Economic Modelling: Final Report"
 subtitle: "Group 4"
-author: "Alex Bujorianu (s2451980) & Rusheel Mehra(s2344211)"
-date: "01/04/2021"
+author: "Alex Bujorianu (s2451980) & Rusheel Mehra (s2344211)"
+date: "06/04/2021"
+linestretch: 1.25
+fontsize: 11pt
 output:
-  word_document: default
-  html_document:
-    df_print: paged
   pdf_document:
     fig_caption: yes
+  html_document:
+    df_print: paged
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -41,7 +43,7 @@ The patients who survived Tx1 move on to the follow up period.  In the follow up
 
 After the first follow up, the surviving patients enter the second treatment line, referred to as Tx2. Tx2 and the trajectories within it are identical to Tx1 and its trajectories. The patients who survive Tx2 go in to the final phase of the pathway, the second follow up, also known as palliative care. The final phase lasts exactly 100 days. We understand that the patients will all die at the end of this period (hence the term palliative care) but we record them as “alive” for modelling purposes—it helps us to distinguish between patients who died prematurely and those who survived the full cycle. 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.cap="A graph of the clinical pathway the patients take in the model."}
 knitr::include_graphics("clinical-pathway.png", error = FALSE)
 ```
 
@@ -53,20 +55,22 @@ Note two things: if the patient has already undergone the full 5 cycles of treat
 
 The death if statement comes first because patients could in principle die on the last treatment cycle (the 5th one). 
 
-```
+``` {r, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 Tx1.Event.alt <- function(cycles, condition, response) {
       #about 10% chance of minor complication, 4% major, 3% death
-      minor_comp <-  if (condition==0 && response==1) {ifelse(beta_minor_good_response >= runif(1), 1, 0)} else
-        if (condition==1 && response==1) {ifelse(beta_minor_poor_response >= runif(1), 1, 0)} else
-          if (condition==0 && response==0) {ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0)} else
-            ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
+      minor_comp <-  
+      if (condition==0 && response==1) {ifelse(beta_minor_good_response >= runif(1), 1, 0)} else
+      if (condition==1 && response==1) {ifelse(beta_minor_poor_response >= runif(1), 1, 0)} else
+      if (condition==0 && response==0) {ifelse(beta_minor_good_nonresponse >= runif(1), 1, 0)} else
+      ifelse(beta_minor_poor_nonresponse >= runif(1), 1, 0)
       major_comp <- ifelse(runif(1) < 0.04, 1, 0);
       death <- ifelse(runif(1) < 0.03, 1, 0);
       #First check to see if the patient is alive, then check for complications
       if (death == 1) {
         return(2)
       }
-      else if (cycles > 4){ #if the patient has survived the cycles, they are taken out of the simulation
+      #if the patient has survived the cycles, they are taken out of the simulation
+      else if (cycles > 4){
         return(5)
       }
       #Stop the treatment if the patient is not responding, do not overtreat
@@ -85,6 +89,8 @@ Tx1.Event.alt <- function(cycles, condition, response) {
       }                                                                         
     }
 ```
+
+Note: for the full code, and the results of our simulations, please see our [Github page](https://github.com/Alex-Bujorianu/ut-health-econ-modelling-q3).
 
 ## Data Analysis
 
@@ -158,13 +164,11 @@ plot(x=seq(0, 200000, length.out = 201), y=percentages_vector, xlab="Willingness
 
 ## Interpretation of the Results
 
-Of course, a WTP of €80,000 is extremely high and not very realistic. A WTP of €20,000 is already one of the highest in the world (see international comparison). At this more realistic threshold, 90% of our results fall below the line.
+Of course, a WTP of €80,000 is extremely high and not very realistic. A WTP of €20,000 is already one of the highest in the world (see international comparison) [3]. At this more realistic threshold, 90% of our results fall below the line.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="80%", fig.align="center", fig.cap="International comparison of CETs (in 2013 dollars per QALY). Countries like Malawi and Cambodia have CETs as low as a few hundred euros per QALY."}
 knitr::include_graphics("international-WTP-table.png", error = FALSE)
 ```
-
-*International comparison of CETs (€/QALY or $/QALY). Countries like Malawi and Cambodia have CETs as low as a few hundred euros per QALY. [3]*
 
 One might question the ethics of introducing a healthcare intervention that harms patients (compared to the existing best standard of care) in exchange for cost savings. This argument is somewhat naïve because it does not take into account opportunity cost: by saving a lot of money on one intervention, other treatments can be paid for in exchange. These treatments may well end up saving more life years, for other patients, than the existing best standard standard of care does. Economic resources are limited; economics, as Robinson put it, is the study of scarcity [2]. As soon as we accept that healthcare resources are limited, we have to make intelligent choices between competing options in order to maximise utility on the budget line.
 
@@ -209,19 +213,19 @@ We do comment our code in various places to explain what events the numbers refe
 
 > For example in Tx1.Event you still use the previously defined probability of 3% of event death occurring. A suggestion is to fit a logistic regression model, to predict this probability of death (event ==1 in the data), based on sex and age of the patient. 
 
-We chose not to use the results of our logistic regression in determining the probability because neither of the two predictors (age and sex) were significant at the α = 0.10 level, which is the weakest threshold of statistical significance accepted by the scientific community. As you can see from our logistic regression results, neither predictor meets that criteria:
+We chose not to use the results of our logistic regression in determining the probability because neither of the two predictors (age and sex) were significant at the alpha = 0.10 level, which is the weakest threshold of statistical significance accepted by the scientific community. As you can see from our logistic regression results, neither predictor meets that criteria:
 
 ```{r}
 summary(logreg_death)
 ```
+
 Even though we had more than 500 observations, only 31 people died in those two cycles. It is well-known that binomial events with a low probability are difficult to test statistically and require a very large number of observations. A good example is vaccination: clinical trials with thousands of participants still do not find rare complications that emerge only once the vaccine has been administered to the general population. This happened with the 1976 swine flu vaccine, which caused a 1 per 100,000 increase in Guillain Barré syndrome [1]. More recently there is controversy that the AstraZeneca vaccine can (rarely) cause blood clots. 
 
-Additionally, implementing this would have lead to more code, which is an additional source of bugs and errors. 
->You did not implement this function in your exp trajectory in any way. So you don’t use the function and patients still continue treatment, even though they don’t respond.
+> You did not implement this function in your exp trajectory in any way. So you don’t use the function and patients still continue treatment, even though they don’t respond.
 
 This is simply incorrect. The exp.model uses the function Tx1.Event.alt which skips the additional treatment cycles if the helper function returns false.
 
->However, you create three functions  (func.dx1cost, func.dx2cost and func.dx3cost) to incorporate uncertainties of costs for the diagnostic tests. These functions are never used again or implemented in your trajectory. 
+> However, you create three functions  (func.dx1cost, func.dx2cost and func.dx3cost) to incorporate uncertainties of costs for the diagnostic tests. These functions are never used again or implemented in your trajectory. 
 
 They are. The exp model uses function.exp.costs which calls up the func.dxcost helper functions.
 
@@ -244,9 +248,8 @@ Speaking of meta-modelling, it is our personal opinion that if you need a meta-m
 
 Also, as a programmer, Alex would find it hard to trust a health economic model if the codebase is really messy. A simpler bug-free model is better than a more complex model filled with bugs.
 
-# References
+# Bibliography
 <head>
-<title>bibliography</title>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta name="generator" content="bibtex2html">
 </head>
@@ -326,5 +329,5 @@ Cystic fibrosis drug will be paid for after all, outgoing health minister says.
 
 </td>
 </tr>
-</table
+</table>
 
