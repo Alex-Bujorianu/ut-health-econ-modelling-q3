@@ -20,6 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, include=FALSE}
 load("../Part_2/PSA-sim-environment.RData")
+load("../Part_2/Dx-environment.RData")
 ```
 
 
@@ -106,6 +107,11 @@ We fit a multivariate normal distribution to the results of the three novel diag
 We begin by separating the data based on whether the patient responded to the treatment or not (determined by the PET scan). We confirm that the normal distribution is indeed a good fit for the individual tests. MGF theory tells us that if you add 3 normal distributions, you end up with a normal distribution whose mean is the sum of the other 3 means.
 
 Next, we find threshold values for the three tests using the quantile function: if one of the values is above the threshold, the patient is 80% likely to be a non-responder. We determine the threshold values for the three tests Dx1, Dx2 and Dx3 to be 0.94, 0.17 and 4.3 respectively. We validated this model against the actual data and had a 70% correct classification rate.
+
+```{r}
+print(m_cov)
+```
+*The covariance matrix for the different test thresholds. If the variables were independent, they would have 0 covariance in relation each other. We see that while there is a correlation, it seems to be pretty weak.*
 
 ## Supportive Functions
 
