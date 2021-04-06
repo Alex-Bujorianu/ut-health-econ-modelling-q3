@@ -90,8 +90,6 @@ Tx1.Event.alt <- function(cycles, condition, response) {
 
 We analyze the available dataset which consists of trial data, in order to determine the patient-level variation as well as second-order uncertainty in order to define parameters and distributions for various attributes of the patients.
 
-###First-order Uncertainty (Patient Level Variation)
-
 **Age & Gender**
 We analyzed the dataset to find the distribution of patients' ages based on their sex. Using the function gofstat and visual confirmation using the plot function, we found that the ages of male patients followed a lognormal distribution and the ages of the female patients best fit a Weibull distribution. Both distributions have a natural zero, i.e. the range of possible values drawn from these distributions is between 0 and infinity. This was ideal, since age cannot be negative.
 
@@ -108,10 +106,24 @@ We begin by separating the data based on whether the patient responded to the tr
 
 Next, we find threshold values for the three tests using the quantile function: if one of the values is above the threshold, the patient is 80% likely to be a non-responder. We determine the threshold values for the three tests Dx1, Dx2 and Dx3 to be 0.94, 0.17 and 4.3 respectively. We validated this model against the actual data and had a 70% correct classification rate.
 
+
 ```{r}
 print(m_cov)
 ```
+
 *The covariance matrix for the different test thresholds. If the variables were independent, they would have 0 covariance in relation each other. We see that while there is a correlation, it seems to be pretty weak.*
+
+**Probability of experiencing major or minor complications during treatment based on response and condition**
+To find the probability of experiencing major or minor complications, we first stratify the data based on condition and then further based on response. We find that the condition and response of a patient does affect the probability of experiencing a complication. The probabilities vary from 0.0047 to 0.1875 for major complications. For minor complications, the probabilities vary from 0.02 to 0.175.
+
+**Distribution for the probability of experiencing minor complications during treatment**
+To fit a distribution to the probability of experiencing minor complications during treatment we chose to use a beta distribution. We can divide the data into two events, a patient experiencing minor complications or not. Therefore, a beta distribution will be a good match with the as the data is binomial. There are r events in n persons. Where n is the number of persons in the treatment cycle and r is number of occurrences of the event a patient experiences minor complications. As seen response and condition of a patient does affect the probability of experiencing minor complications. Therefore, we stratify the data based on response and condtition and fit four different beta distributions to each vector.
+
+**Distributions for the mean utility of patients in Tx1 & Tx2 who did not experience any complications based on their response**
+To fit the distributions, we first stratify the data from the first cycle in both lines of treatment based on whether the patient responds or not. We do this individually for Tx1 and Tx2. By doing a visual check of the histograms for the individual vectors we see that all of them seem to have a normal bell curve. In addition to this, utility of a patient is never less than zero. Therefore, we conclude that lognormal will be a good fit for the vectors. We verify this by using the function gofstat. We then fit lognormal distributions to the individual vectors. 
+
+**Distribution for probability of death in first follow up**
+To fit a distribution to the probability of death in the first follow up we chose to use a beta distribution as it is a good match with the binomial data. As mentioned in the Simulation model section, there are two possibilities, either a person survives the follow up or they die. There are r events in n persons. Where n is the number of persons in the first follow up and r is number of occurrences of the event a patient dying.
 
 ## Supportive Functions
 
